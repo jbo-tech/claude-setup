@@ -82,6 +82,41 @@ claude/
 | `/worktree-setup` | Setup pour parallélisme git worktree |
 | `/worktree-merge` | Merge des worktrees |
 
+## Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       /bootstrap                            │
+│                   (contexte projet)                         │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                        /explore                             │
+│                    (compréhension)                          │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                         /scope                              │
+│                    (what/why/how)                           │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+              ┌─────────────┴─────────────┐
+              ↓                           ↓
+          Clair ?                      Flou ?
+              ↓                           ↓
+    ┌─────────┴─────────┐             /explore
+    ↓                   ↓                 ↓
+  Petit               Gros          [clarifier]
+    ↓                   ↓                 ↓
+  Code              /decompose      Retour /scope
+    ↓                   ↓
+ /commit            worktrees
+    ↓                   ↓
+ /retro               merge
+                        ↓
+                     /retro
+```
+
 ## Agents
 
 | Agent | Déclencheurs |
