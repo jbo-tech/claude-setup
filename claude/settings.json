@@ -1,0 +1,51 @@
+{
+  "model": "opus",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Bash(git *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(pytest *)",
+      "Bash(ruff *)",
+      "Bash(make *)",
+      "Bash(docker *)",
+      "Bash(docker compose *)",
+      "Bash(duckdb *)",
+      "Bash(uv *)",
+      "Bash(pip *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(gh *)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/*credentials*)",
+      "Read(**/*secret*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write(*.py)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "RUFF_BIN=$(command -v ruff || echo \"$HOME/.local/bin/ruff\"); [ -x \"$RUFF_BIN\" ] && \"$RUFF_BIN\" check --fix --quiet \"$CLAUDE_FILE_PATH\" 2>/dev/null; [ -x \"$RUFF_BIN\" ] && \"$RUFF_BIN\" format --quiet \"$CLAUDE_FILE_PATH\" 2>/dev/null; true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
