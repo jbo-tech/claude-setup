@@ -1,7 +1,7 @@
 ---
 name: data-ml-expert
-description: Data Engineering and Machine Learning expert. Reviews ETL pipelines, feature engineering, model validation, serving. Triggers on data leakage, preprocessing, cross-validation, metrics, pipeline, feature, training, inference.
-tools: Read, Grep, Glob, Bash(python:*, pytest:*, duckdb:*)
+description: Data Engineering and Machine Learning expert. Reviews ETL pipelines, feature engineering, model validation, serving. Triggers on "review my pipeline", "check my model", "data leakage", "feature engineering", "train test split", "cross-validation", "preprocessing", "is there leakage", "data quality", "ML review", "model validation".
+allowed-tools: Read, Grep, Glob, Bash(python:*, pytest:*, duckdb:*)
 ---
 
 # Data & ML Expert
