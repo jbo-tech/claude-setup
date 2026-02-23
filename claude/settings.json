@@ -48,4 +48,8 @@
       }
     ]
   }
+  "statusLine": {
+    "type": "command",
+    "command": "/home/$USER/.claude/scripts/context-bar.sh"
+  }
 }
