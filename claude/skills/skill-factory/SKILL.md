@@ -1,3 +1,8 @@
+---
+name: skill-factory
+description: Creates custom skills that auto-activate when relevant. Use when user wants to create reusable patterns or domain knowledge. Triggers on "create a skill", "make a skill", "build a skill", "I keep explaining the same thing", "can Claude remember how", "reusable pattern", "teach Claude to".
+---
+
 # Skill Factory
 
 Create custom skills that auto-activate when relevant.
@@ -105,7 +110,7 @@ Use the appropriate template:
 The `description` field determines when the skill activates. Include:
 - Technology names (duckdb, kestra, plex)
 - Task types (feature engineering, data validation)
-- Specific terms users would mention
+- Specific phrases users would say
 
 ### Keep it focused
 One skill = one topic. Don't create a "data science skill" — create separate skills for feature engineering, model evaluation, data validation.

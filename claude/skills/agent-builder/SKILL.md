@@ -1,6 +1,6 @@
 ---
 name: agent-builder
-description: Creates specialized Claude Code agents tailored to the project. Use when starting a new project requiring specific expertise (frontend, creative, domain-specific). Triggers on create agent, need expert, build agent, new agent, specialized assistant.
+description: Creates specialized Claude Code agents tailored to the project. Use when starting a new project requiring specific expertise. Triggers on "create an agent", "build an agent", "need an expert", "new agent", "specialized assistant", "make an agent for", "custom agent".
 allowed-tools: Read, Write, Glob
 ---
 
