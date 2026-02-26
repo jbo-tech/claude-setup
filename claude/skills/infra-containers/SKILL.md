@@ -1,93 +1,93 @@
 ---
 name: infra-containers
-description: Bonnes pratiques pour la conteneurisation, l'orchestration, le cloud storage et le déploiement. S'active quand l'utilisateur mentionne "Dockerfile", "docker compose", "podman", "kubernetes", "k8s", "container", "deploy", "healthcheck", "image", "orchestration", "systemd", "kestra", "CI/CD", "monitoring", "S3", "MinIO", "rclone", "homelab", "ZimaBoard", "Raspberry Pi". Ne PAS utiliser pour les questions de sécurité pure (utiliser security-review).
+description: Best practices for containerization, orchestration, cloud storage and deployment. Activates when the user mentions "Dockerfile", "docker compose", "podman", "kubernetes", "k8s", "container", "deploy", "healthcheck", "image", "orchestration", "systemd", "kestra", "CI/CD", "monitoring", "S3", "MinIO", "rclone", "homelab", "ZimaBoard", "Raspberry Pi". Do NOT use for pure security questions (use security-review).
 ---
 
 # Infrastructure & Containers
 
-Guidance pour la conteneurisation, l'orchestration et le déploiement d'applications.
+Guidance for containerization, orchestration and application deployment.
 
-## Quand ce skill s'active
+## When this skill activates
 
-- Écriture ou revue de Dockerfile / Containerfile
-- Configuration Docker Compose, Podman Compose ou Kubernetes
-- Choix d'orchestration (Kestra, systemd, K8s)
-- Optimisation d'images (taille, layers, build time)
-- Mise en place de monitoring et healthchecks
-- Configuration de stockage cloud (S3, MinIO, Rclone)
-- Déploiement sur environnements contraints (homelab, edge)
+- Writing or reviewing Dockerfile / Containerfile
+- Docker Compose, Podman Compose or Kubernetes configuration
+- Orchestration choices (Kestra, systemd, K8s)
+- Image optimization (size, layers, build time)
+- Setting up monitoring and healthchecks
+- Cloud storage configuration (S3, MinIO, Rclone)
+- Deploying to constrained environments (homelab, edge)
 
-## Checklist rapide
+## Quick checklist
 
 ### Dockerfile / Containerfile
-- Image de base minimale et versionnée (pas :latest)
-- Multi-stage build si compilation nécessaire
-- Utilisateur non-root défini
-- HEALTHCHECK configuré
-- .dockerignore / .containerignore présent et complet
-- Ordre des layers optimisé (dépendances avant code)
+- Minimal and versioned base image (not :latest)
+- Multi-stage build if compilation needed
+- Non-root user defined
+- HEALTHCHECK configured
+- .dockerignore / .containerignore present and complete
+- Layer order optimized (dependencies before code)
 
 ### Compose (Docker / Podman)
-- Politique de restart définie
-- Limites mémoire/CPU si environnement contraint
-- Volumes nommés pour les données persistantes
-- Réseau dédié si multi-service
-- Variables d'environnement externalisées (.env)
+- Restart policy defined
+- Memory/CPU limits if constrained environment
+- Named volumes for persistent data
+- Dedicated network if multi-service
+- Environment variables externalized (.env)
 
 ### Kubernetes
-- Resources requests et limits définis
-- Liveness et readiness probes configurées
-- Pas de :latest dans les images
-- Namespaces pour l'isolation
-- ConfigMaps/Secrets pour la configuration
+- Resource requests and limits defined
+- Liveness and readiness probes configured
+- No :latest in images
+- Namespaces for isolation
+- ConfigMaps/Secrets for configuration
 
 ### Orchestration
-- Tâches idempotentes avec timeout
-- Gestion explicite des échecs
-- Triggers avec timezone explicite
-- Stratégie de rollback documentée
+- Idempotent tasks with timeout
+- Explicit failure handling
+- Triggers with explicit timezone
+- Documented rollback strategy
 
 ### Monitoring
-- Endpoint /health sur chaque service
-- Logs structurés (JSON) avec rotation
-- Niveaux de log appropriés
-- Alertes actionnables (pas de bruit)
+- /health endpoint on each service
+- Structured logs (JSON) with rotation
+- Appropriate log levels
+- Actionable alerts (no noise)
 
 ### Cloud & Storage
-- Buckets S3/MinIO avec policies d'accès minimales
-- Lifecycle rules pour le nettoyage automatique
-- Rclone avec cache local configuré et dimensionné
-- Retry et timeout sur les opérations réseau
-- Mode dégradé si stockage distant indisponible
+- S3/MinIO buckets with minimal access policies
+- Lifecycle rules for automatic cleanup
+- Rclone with local cache configured and sized
+- Retry and timeout on network operations
+- Degraded mode if remote storage unavailable
 
-### Environnements contraints (homelab, edge)
-- Limites mémoire/CPU explicites sur chaque service
-- Swap configuré mais limité
-- Pas de tâches gourmandes en parallèle
-- Monitoring mémoire avec alertes
-- Cloud bursting pour les tâches lourdes (provisioning idempotent)
+### Constrained environments (homelab, edge)
+- Explicit memory/CPU limits on each service
+- Swap configured but limited
+- No concurrent resource-hungry tasks
+- Memory monitoring with alerts
+- Cloud bursting for heavy tasks (idempotent provisioning)
 
-## Principes clés
+## Key principles
 
-1. **Immutable infrastructure** — Ne pas modifier un conteneur en cours, reconstruire
-2. **Minimal par défaut** — Plus l'image est petite, moins la surface d'attaque est grande
-3. **Healthcheck obligatoire** — Un conteneur sans healthcheck est une boîte noire
-4. **Environnement contraint = contrainte explicite** — Limites mémoire/CPU toujours définies
+1. **Immutable infrastructure** — Don't modify a running container, rebuild it
+2. **Minimal by default** — The smaller the image, the smaller the attack surface
+3. **Mandatory healthcheck** — A container without healthcheck is a black box
+4. **Constrained environment = explicit constraints** — Memory/CPU limits always defined
 
 ## Anti-patterns
 
-- Image basée sur :latest en production
-- Secrets en dur dans le Dockerfile ou le compose
-- Conteneur qui tourne en root sans raison
-- Pas de healthcheck → restart en boucle sans diagnostic
-- Volume bind-mount en production au lieu de volumes nommés
-- Logs sur stdout sans rotation ni agrégation
+- Image based on :latest in production
+- Hardcoded secrets in Dockerfile or compose
+- Container running as root without reason
+- No healthcheck → restart loop without diagnosis
+- Bind-mount volumes in production instead of named volumes
+- Logs on stdout without rotation or aggregation
 
-## Quand escalader vers @infra-expert
+## When to escalate to @infra-expert
 
-Utiliser l'agent complet pour :
-- Revue approfondie d'une stack Docker/Podman/K8s complète
-- Audit de performance ou d'optimisation d'images
-- Architecture d'orchestration complexe (Kestra, workflows multi-étapes)
-- Déploiement sur environnements contraints (ZimaBoard, Raspberry Pi)
-- Quand le format de revue structuré avec estimation des ressources est nécessaire
+Use the full agent for:
+- In-depth review of a full Docker/Podman/K8s stack
+- Performance audit or image optimization
+- Complex orchestration architecture (Kestra, multi-step workflows)
+- Deploying to constrained environments (ZimaBoard, Raspberry Pi)
+- When structured review format with resource estimation is needed

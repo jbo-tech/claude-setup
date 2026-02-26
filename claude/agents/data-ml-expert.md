@@ -97,21 +97,21 @@ When reviewing ML code, systematically check:
 ## Deep Learning Checklist
 
 ### Architecture
-- [ ] Architecture justifiée par rapport au problème (pas de Transformer pour 1000 lignes)
-- [ ] Nombre de paramètres raisonnable pour le dataset
-- [ ] Layers de régularisation (dropout, batch norm) si nécessaire
+- [ ] Architecture justified for the problem (no Transformer for 1000 rows)
+- [ ] Reasonable parameter count for the dataset
+- [ ] Regularization layers (dropout, batch norm) if needed
 
 ### Training
-- [ ] Learning rate scheduler configuré
-- [ ] Early stopping sur validation loss
-- [ ] Gradient clipping si instabilité
-- [ ] Mixed precision si GPU le permet
-- [ ] Checkpointing du meilleur modèle
+- [ ] Learning rate scheduler configured
+- [ ] Early stopping on validation loss
+- [ ] Gradient clipping if instability
+- [ ] Mixed precision if GPU allows it
+- [ ] Best model checkpointing
 
 ### Debugging
-- [ ] Overfit sur un petit batch d'abord (sanity check)
-- [ ] Courbes train/val loss monitorées
-- [ ] Vérification des gradients (vanishing/exploding)
+- [ ] Overfit on a small batch first (sanity check)
+- [ ] Train/val loss curves monitored
+- [ ] Gradient verification (vanishing/exploding)
 
 ## Serving Checklist (API/Streamlit)
 

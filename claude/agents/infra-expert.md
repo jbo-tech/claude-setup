@@ -77,30 +77,30 @@ You are a senior Infrastructure and DevOps expert. You operate in read-only mode
 ## Kubernetes Checklist
 
 ### Workloads
-- [ ] Resources requests et limits définis
-- [ ] Liveness et readiness probes configurées
-- [ ] Pas de :latest dans les images
-- [ ] Replicas > 1 pour la haute disponibilité
-- [ ] Rolling update strategy configurée
+- [ ] Resource requests and limits defined
+- [ ] Liveness and readiness probes configured
+- [ ] No :latest in images
+- [ ] Replicas > 1 for high availability
+- [ ] Rolling update strategy configured
 
 ### Configuration & Secrets
-- [ ] ConfigMaps pour la config non-sensible
-- [ ] Secrets Kubernetes pour les credentials
-- [ ] Pas de secrets en clair dans les manifests
-- [ ] Namespaces pour l'isolation des environnements
+- [ ] ConfigMaps for non-sensitive config
+- [ ] Kubernetes Secrets for credentials
+- [ ] No plaintext secrets in manifests
+- [ ] Namespaces for environment isolation
 
 ### Networking
-- [ ] Services avec type approprié (ClusterIP par défaut)
-- [ ] Ingress avec TLS si exposé
-- [ ] Network policies si isolation nécessaire
+- [ ] Services with appropriate type (ClusterIP by default)
+- [ ] Ingress with TLS if exposed
+- [ ] Network policies if isolation needed
 
 ## Podman Checklist
 
-### Différences Docker
-- [ ] Rootless par défaut (pas besoin de --privileged)
-- [ ] Pods pour grouper les conteneurs liés
-- [ ] Systemd integration pour les services
-- [ ] Compatible OCI (mêmes images que Docker)
+### Differences from Docker
+- [ ] Rootless by default (no need for --privileged)
+- [ ] Pods to group related containers
+- [ ] Systemd integration for services
+- [ ] OCI compatible (same images as Docker)
 
 ## Kestra Checklist
 

@@ -1,67 +1,67 @@
 ---
 name: ml-review
-description: Bonnes pratiques pour le machine learning, deep learning et l'analyse de données. S'active quand l'utilisateur mentionne "model", "training", "features", "cross-validation", "accuracy", "overfitting", "data leakage", "preprocessing", "sklearn", "pytorch", "tensorflow", "neural network", "regression", "classification". Ne PAS utiliser pour les pipelines ETL ou la qualité des données (utiliser data-engineering).
+description: Best practices for machine learning, deep learning and data analysis. Activates when the user mentions "model", "training", "features", "cross-validation", "accuracy", "overfitting", "data leakage", "preprocessing", "sklearn", "pytorch", "tensorflow", "neural network", "regression", "classification". Do NOT use for ETL pipelines or data quality (use data-engineering).
 ---
 
 # ML Review
 
-Guidance pour la conception, la validation et le déploiement de modèles ML/DL.
+Guidance for designing, validating and deploying ML/DL models.
 
-## Quand ce skill s'active
+## When this skill activates
 
-- Revue de code ML ou deep learning
-- Questions sur le feature engineering ou le preprocessing
-- Validation de la méthodologie (cross-validation, métriques)
-- Détection de data leakage
-- Choix de modèle ou d'architecture
-- Mise en production d'un modèle (serving, monitoring)
+- Reviewing ML or deep learning code
+- Questions about feature engineering or preprocessing
+- Methodology validation (cross-validation, metrics)
+- Data leakage detection
+- Model or architecture selection
+- Model deployment (serving, monitoring)
 
-## Checklist rapide
+## Quick checklist
 
 ### Data Leakage
-- Scaling/encoding APRÈS le train/test split
-- Pas de features dérivées de données futures
-- Validation temporelle si données séquentielles
-- Agrégations calculées sur le train set uniquement
+- Scaling/encoding AFTER train/test split
+- No features derived from future data
+- Temporal validation if sequential data
+- Aggregations computed on train set only
 
 ### Validation
-- Métrique alignée avec l'objectif métier
-- Cross-validation stratifiée si données déséquilibrées
-- Test set jamais touché pendant le tuning
-- Baseline naïve documentée
+- Metric aligned with business objective
+- Stratified cross-validation if imbalanced data
+- Test set never touched during tuning
+- Naive baseline documented
 
-### Reproductibilité
-- Seeds fixés (numpy, random, framework)
-- Versions des dépendances verrouillées
-- Données d'entraînement versionnées
-- Hyperparamètres trackés
+### Reproducibility
+- Seeds fixed (numpy, random, framework)
+- Dependency versions locked
+- Training data versioned
+- Hyperparameters tracked
 
 ### Serving
-- Preprocessing identique entre entraînement et inférence
-- Modèle packagé avec scaler/encoder
-- Gestion des entrées malformées
-- Logging des prédictions pour monitoring
+- Inference preprocessing identical to training
+- Model packaged with scaler/encoder
+- Malformed input handling
+- Prediction logging for monitoring
 
-## Principes clés
+## Key principles
 
-1. **Leakage = ennemi n°1** — Toujours vérifier la séparation temporelle et informationnelle
-2. **Baseline d'abord** — Un modèle simple qui bat le hasard avant d'aller plus loin
-3. **Métrique = décision métier** — L'accuracy n'est presque jamais la bonne métrique
-4. **Reproductibilité non négociable** — Si on ne peut pas le reproduire, on ne peut pas le débugger
+1. **Leakage = enemy #1** — Always verify temporal and informational separation
+2. **Baseline first** — A simple model that beats random before going further
+3. **Metric = business decision** — Accuracy is almost never the right metric
+4. **Reproducibility non-negotiable** — If you can't reproduce it, you can't debug it
 
 ## Anti-patterns
 
-- Fit le scaler sur tout le dataset avant le split
-- Optimiser l'accuracy sur des classes déséquilibrées
-- Pas de seed → résultats différents à chaque run
-- Preprocessing différent entre train et inference
-- Modèle en production sans monitoring de drift
+- Fitting the scaler on the entire dataset before splitting
+- Optimizing accuracy on imbalanced classes
+- No seed → different results on every run
+- Different preprocessing between train and inference
+- Model in production without drift monitoring
 
-## Quand escalader vers @data-ml-expert
+## When to escalate to @data-ml-expert
 
-Utiliser l'agent complet pour :
-- Revue approfondie de code ML/DL avec checklists détaillées
-- Audit complet d'un pipeline ML de bout en bout
-- Choix d'architecture de modèle complexe
-- Revue d'une mise en production (API, Streamlit, Gradio)
-- Quand le format de revue structuré (critique/warning/positif) est nécessaire
+Use the full agent for:
+- In-depth ML/DL code review with detailed checklists
+- End-to-end ML pipeline audit
+- Complex model architecture choices
+- Deployment review (API, Streamlit, Gradio)
+- When structured review format (critical/warning/positive) is needed

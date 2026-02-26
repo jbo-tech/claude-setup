@@ -1,76 +1,76 @@
 ---
 name: security-review
-description: Bonnes pratiques de sécurité pour l'infrastructure et les déploiements. S'active quand l'utilisateur mentionne "secrets", "permissions", "exposed port", "CVE", "hardening", "vulnerability", "scan", "credentials", "TLS", "firewall", "root access", "capabilities". Ne PAS utiliser pour la configuration de conteneurs (utiliser infra-containers) sauf si le problème est spécifiquement lié à la sécurité.
+description: Security best practices for infrastructure and deployments. Activates when the user mentions "secrets", "permissions", "exposed port", "CVE", "hardening", "vulnerability", "scan", "credentials", "TLS", "firewall", "root access", "capabilities". Do NOT use for container configuration (use infra-containers) unless the issue is specifically security-related.
 ---
 
 # Security Review
 
-Guidance pour la sécurité de l'infrastructure, des conteneurs et des déploiements.
+Guidance for infrastructure, container and deployment security.
 
-## Quand ce skill s'active
+## When this skill activates
 
-- Revue de sécurité d'une configuration d'infrastructure
-- Gestion des secrets et credentials
-- Hardening de conteneurs ou de services
-- Questions sur les ports exposés ou les permissions
-- Scan de vulnérabilités et CVE
-- Configuration TLS/SSL
+- Security review of infrastructure configuration
+- Secrets and credentials management
+- Container or service hardening
+- Questions about exposed ports or permissions
+- Vulnerability scanning and CVEs
+- TLS/SSL configuration
 
-## Checklist rapide
+## Quick checklist
 
 ### Secrets & Credentials
-- Aucun secret en dur dans le code ou la configuration
-- Secrets injectés via secret store ou variables d'environnement
-- Fichiers .env exclus du versioning (.gitignore)
-- Rotation des secrets documentée
-- Pas de credentials dans les logs
+- No hardcoded secrets in code or configuration
+- Secrets injected via secret store or environment variables
+- .env files excluded from versioning (.gitignore)
+- Secret rotation documented
+- No credentials in logs
 
-### Conteneurs
-- Utilisateur non-root
-- Capabilities droppées (pas de --privileged)
-- Images scannées pour les vulnérabilités
-- Ports exposés minimisés
-- Read-only filesystem quand possible
+### Containers
+- Non-root user
+- Capabilities dropped (no --privileged)
+- Images scanned for vulnerabilities
+- Exposed ports minimized
+- Read-only filesystem when possible
 
-### Réseau
-- Ports exposés uniquement si nécessaire
-- TLS activé pour les communications externes
-- Réseau interne isolé pour les services internes
-- Pas de port de debug exposé en production
+### Network
+- Ports exposed only when necessary
+- TLS enabled for external communications
+- Internal network isolated for internal services
+- No debug port exposed in production
 
 ### Permissions
-- Principe du moindre privilège appliqué
-- Permissions fichiers vérifiées (pas de 777)
-- Accès aux volumes restreint
-- Service accounts avec permissions minimales
+- Least privilege principle applied
+- File permissions verified (no 777)
+- Volume access restricted
+- Service accounts with minimal permissions
 
 ### CI/CD
-- Secrets via le secret store du CI (pas en clair dans le pipeline)
-- Images signées si registry partagé
-- Pas de push en root sur le registry
-- Scan de vulnérabilités dans le pipeline
+- Secrets via CI secret store (not plaintext in pipeline)
+- Signed images if shared registry
+- No root push to registry
+- Vulnerability scanning in pipeline
 
-## Principes clés
+## Key principles
 
-1. **Moindre privilège** — Chaque composant n'a accès qu'à ce dont il a besoin
-2. **Défense en profondeur** — Pas de couche unique de sécurité
-3. **Secrets = éphémères** — Rotation régulière, jamais en dur
-4. **Audit trail** — Toute action sensible doit être traçable
+1. **Least privilege** — Each component only accesses what it needs
+2. **Defense in depth** — No single security layer
+3. **Secrets = ephemeral** — Regular rotation, never hardcoded
+4. **Audit trail** — Every sensitive action must be traceable
 
 ## Anti-patterns
 
-- `--privileged` ou `--cap-add=ALL` sans justification
-- Secrets en clair dans docker-compose.yml ou les variables d'environnement du CI
-- Port 22 exposé sur un conteneur
-- Image de base jamais mise à jour (CVE accumulées)
-- Wildcard dans les permissions (chmod 777, 0.0.0.0 sans restriction)
-- Désactiver TLS "parce que c'est du réseau interne"
+- `--privileged` or `--cap-add=ALL` without justification
+- Plaintext secrets in docker-compose.yml or CI environment variables
+- Port 22 exposed on a container
+- Base image never updated (accumulated CVEs)
+- Wildcard permissions (chmod 777, 0.0.0.0 without restriction)
+- Disabling TLS "because it's internal network"
 
-## Quand escalader vers @infra-expert
+## When to escalate to @infra-expert
 
-Utiliser l'agent complet pour :
-- Audit de sécurité complet d'une stack
-- Analyse de vulnérabilités et plan de remédiation
-- Architecture réseau sécurisée (isolation, segmentation)
-- Revue de la chaîne CI/CD pour les risques supply chain
-- Quand le format de revue structuré avec niveaux de criticité est nécessaire
+Use the full agent for:
+- Full security audit of a stack
+- Vulnerability analysis and remediation plan
+- Secure network architecture (isolation, segmentation)
+- CI/CD chain review for supply chain risks
+- When structured review format with criticality levels is needed

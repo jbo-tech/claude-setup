@@ -1,65 +1,65 @@
 ---
 name: data-engineering
-description: Bonnes pratiques pour les pipelines de données, ETL/ELT, qualité des données et stockage. S'active quand l'utilisateur mentionne "pipeline", "ETL", "data quality", "parquet", "duckdb", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Ne PAS utiliser pour du machine learning ou de l'analyse statistique (utiliser ml-review).
+description: Best practices for data pipelines, ETL/ELT, data quality and storage. Activates when the user mentions "pipeline", "ETL", "data quality", "parquet", "duckdb", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Do NOT use for machine learning or statistical analysis (use ml-review).
 ---
 
 # Data Engineering
 
-Guidance pour la conception et la revue de pipelines de données.
+Guidance for designing and reviewing data pipelines.
 
-## Quand ce skill s'active
+## When this skill activates
 
-- Conception ou revue de pipelines ETL/ELT
-- Questions sur la qualité des données ou la validation de schémas
-- Choix de formats de stockage (Parquet, DuckDB, CSV)
-- Configuration d'orchestrateurs (Kestra, Airflow, Prefect)
-- Problèmes d'idempotence ou de reprise sur erreur
+- Designing or reviewing ETL/ELT pipelines
+- Questions about data quality or schema validation
+- Choosing storage formats (Parquet, DuckDB, CSV)
+- Configuring orchestrators (Kestra, Airflow, Prefect)
+- Idempotency or error recovery issues
 
-## Checklist rapide
+## Quick checklist
 
-Avant de valider un pipeline, vérifier :
+Before validating a pipeline, check:
 
 ### Ingestion
-- Validation du schéma au point d'entrée
-- Gestion des erreurs API (retry, backoff, timeout)
-- Stratégie de backfill documentée
+- Schema validation at entry point
+- API error handling (retry, backoff, timeout)
+- Documented backfill strategy
 
 ### Transformation
-- Opérations idempotentes
-- Pas de dépendance à l'ordre d'exécution
-- Gestion explicite des valeurs nulles
-- Partitionnement aligné sur les patterns de requêtes
+- Idempotent operations
+- No dependency on execution order
+- Explicit null value handling
+- Partitioning aligned with query patterns
 
-### Stockage
-- Format adapté au cas d'usage (ligne vs colonne)
-- Compression activée
-- Métadonnées versionnées
-- Stratégie de rétention définie
+### Storage
+- Format suited to use case (row vs columnar)
+- Compression enabled
+- Versioned metadata
+- Retention strategy defined
 
 ### Orchestration
-- Tâches idempotentes avec timeout
-- Gestion explicite des échecs (retry, allowFailure)
-- Triggers avec timezone explicite
-- Stratégie de backfill si applicable
+- Idempotent tasks with timeout
+- Explicit failure handling (retry, allowFailure)
+- Triggers with explicit timezone
+- Backfill strategy if applicable
 
-## Principes clés
+## Key principles
 
-1. **Idempotence partout** — Rejouer un pipeline ne doit jamais corrompre les données
-2. **Schéma en premier** — Valider la structure avant de traiter le contenu
-3. **Fail loud** — Logger les anomalies, pas seulement les erreurs
-4. **Partition intelligemment** — Aligner sur les patterns de lecture, pas d'écriture
+1. **Idempotency everywhere** — Replaying a pipeline must never corrupt data
+2. **Schema first** — Validate structure before processing content
+3. **Fail loud** — Log anomalies, not just errors
+4. **Partition smartly** — Align with read patterns, not write patterns
 
 ## Anti-patterns
 
-- Pipeline qui dépend de l'heure d'exécution pour sa logique
-- Transformation qui lit et écrit dans la même table
-- Schéma implicite ("ça marche parce que le CSV a toujours 5 colonnes")
-- Aucune stratégie de reprise après crash
+- Pipeline that depends on execution time for its logic
+- Transformation that reads and writes to the same table
+- Implicit schema ("it works because the CSV always has 5 columns")
+- No recovery strategy after crash
 
-## Quand escalader vers @data-ml-expert
+## When to escalate to @data-ml-expert
 
-Utiliser l'agent complet pour :
-- Revue approfondie d'un pipeline complexe
-- Audit de qualité des données sur un système existant
-- Choix d'architecture de données (batch vs streaming, lac vs warehouse)
-- Quand les checklists détaillées et le format de revue structuré sont nécessaires
+Use the full agent for:
+- In-depth review of a complex pipeline
+- Data quality audit on an existing system
+- Data architecture choices (batch vs streaming, lake vs warehouse)
+- When detailed checklists and structured review format are needed

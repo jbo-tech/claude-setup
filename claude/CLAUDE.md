@@ -1,7 +1,7 @@
 # Global Preferences
 
 ## Language
-- Comments and docstrings: French
+- Comments and docstrings: English
 - Commit messages: English (conventional commits)
 - Variable/function names: English
 
