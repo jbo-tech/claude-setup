@@ -1,55 +1,55 @@
 # Claude Setup
 
-Configuration personnelle pour Claude Code : commandes, agents et skills.
+Personal configuration for Claude Code: commands, agents and skills.
 
 ## Installation
 
 ```bash
-# Cloner le repo
+# Clone the repo
 git clone https://github.com/jbo-tech/claude-setup.git
 
-# Copier le contenu vers ~/.claude/
+# Copy contents to ~/.claude/
 cp -r claude-setup/claude/* ~/.claude/
 
-# Installer ruff (requis pour le hook de formatage Python)
-# Voir section "Installation de ruff" ci-dessous
+# Install ruff (required for the Python formatting hook)
+# See "Installing ruff" section below
 ```
 
-### Installation de ruff
+### Installing ruff
 
-**Avec pipx (recommandé)**
+**With pipx (recommended)**
 
 ```bash
-# Installer pipx si pas déjà fait
+# Install pipx if not already done
 brew install pipx
 pipx ensurepath
 
-# Redémarrer le terminal ou
+# Restart terminal or
 source ~/.zshrc
 
-# Installer ruff globalement
+# Install ruff globally
 pipx install ruff
 
-# Vérifier
+# Verify
 which ruff
 # → ~/.local/bin/ruff
 ```
 
-**Avec uv (alternative moderne)**
+**With uv (modern alternative)**
 
 ```bash
-# Installer uv si pas déjà fait
+# Install uv if not already done
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Installer ruff comme outil global
+# Install ruff as a global tool
 uv tool install ruff
 
-# Vérifier
+# Verify
 which ruff
 # → ~/.local/bin/ruff
 ```
 
-**Avec pip**
+**With pip**
 
 ```bash
 pip install ruff
@@ -59,56 +59,56 @@ pip install ruff
 
 ```
 claude/
-├── CLAUDE.md              # Préférences globales
-├── settings.json          # Permissions et hooks
+├── CLAUDE.md              # Global preferences
+├── settings.json          # Permissions and hooks
 ├── commands/              # Slash commands
-├── agents/                # Agents spécialisés
-├── skills/                # Skills avec templates
-└── scripts/               # Scripts utilitaires
+├── agents/                # Specialized agents
+├── skills/                # Skills with templates
+└── scripts/               # Utility scripts
 ```
 
-## Commandes
+## Commands
 
-| Commande | Description |
-|----------|-------------|
-| `/bootstrap` | Initialise le contexte projet |
-| `/scope` | Point d'entrée (what/why/how) |
+| Command | Description |
+|---------|-------------|
+| `/bootstrap` | Initialize project context |
+| `/scope` | Entry point (what/why/how) |
 | `/explore [tag]` | Exploration (tags: `technical`, `architecture`, `business`, `user`) |
-| `/audit` | Audit de code |
-| `/decompose` | Décomposition en tâches parallélisables |
-| `/commit` | Commit git |
-| `/pr` | Création de PR |
-| `/retro` | Rétrospective de session |
-| `/worktree-setup` | Setup pour parallélisme git worktree |
-| `/worktree-merge` | Merge des worktrees |
+| `/audit` | Code audit |
+| `/decompose` | Decompose into parallelizable tasks |
+| `/commit` | Git commit |
+| `/pr` | Create PR |
+| `/retro` | Session retrospective |
+| `/worktree-setup` | Setup for git worktree parallelism |
+| `/worktree-merge` | Merge worktrees |
 
 ## Workflow
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                       /bootstrap                            │
-│                   (contexte projet)                         │
+│                   (project context)                         │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                        /explore                             │
-│                    (compréhension)                          │
+│                    (understanding)                          │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                         /scope                              │
-│                    (what/why/how)                           │
+│                    (what/why/how)                            │
 └─────────────────────────────────────────────────────────────┘
                             ↓
               ┌─────────────┴─────────────┐
               ↓                           ↓
-          Clair ?                      Flou ?
+          Clear?                      Unclear?
               ↓                           ↓
     ┌─────────┴─────────┐             /explore
     ↓                   ↓                 ↓
-  Petit               Gros          [clarifier]
+  Small               Large          [clarify]
     ↓                   ↓                 ↓
-  Code              /decompose      Retour /scope
+  Code              /decompose      Back to /scope
     ↓                   ↓
  /commit            worktrees
     ↓                   ↓
@@ -119,8 +119,8 @@ claude/
 
 ## Agents
 
-| Agent | Déclencheurs |
-|-------|--------------|
+| Agent | Triggers |
+|-------|----------|
 | `data-ml-expert` | data leakage, preprocessing, cross-validation, pipeline, feature, training |
 | `infra-expert` | container, dockerfile, compose, deploy, kubernetes, systemd |
 | `creative-director` | brainstorm, naming, concept, creative, branding, vision |
@@ -129,16 +129,16 @@ claude/
 
 | Skill | Description |
 |-------|-------------|
-| `agent-builder` | Création d'agents spécialisés |
-| `skill-factory` | Création de skills |
+| `agent-builder` | Create specialized agents |
+| `skill-factory` | Create skills |
 
 ## Configuration
 
 ### settings.json
 
-- **Modèle** : opus
-- **Permissions** : git, python, pytest, ruff, make, docker, uv, pip, npm, gh
-- **Hook ruff** : formatage automatique des fichiers Python après écriture
+- **Model**: opus
+- **Permissions**: git, python, pytest, ruff, make, docker, uv, pip, npm, gh
+- **Ruff hook**: automatic formatting of Python files after write
 
 ## License
 
