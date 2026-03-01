@@ -75,6 +75,17 @@ Suggested addition to CLAUDE.md:
 
 The user will apply manually after review.
 
+### 6. Suggest README.md updates (DO NOT APPLY)
+
+If the session changed functionality, usage, structure or dependencies, and a README.md exists at the project root, **suggest updates but do not modify**:
+
+```
+Suggested update to README.md:
+> [proposed content]
+```
+
+The user will apply manually after review.
+
 ## Output format
 
 After updating files, summarize:
@@ -88,6 +99,9 @@ After updating files, summarize:
 - decisions.md: [added X entries / no changes]
 
 ### Suggested for CLAUDE.md
+[suggestions or "None"]
+
+### Suggested for README.md
 [suggestions or "None"]
 
 ### Ready for next session
