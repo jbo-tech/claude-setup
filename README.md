@@ -76,6 +76,8 @@ claude/
 | `/explore [tag]` | Exploration (tags: `technical`, `architecture`, `business`, `user`) |
 | `/audit` | Code audit |
 | `/decompose` | Decompose into parallelizable tasks |
+| `/decompose-run` | Execute decomposed tasks sequentially, one commit per task |
+| `/tdd-loop` | Iterative red/green/refactor loop until acceptance criteria met |
 | `/commit` | Git commit |
 | `/pr` | Create PR |
 | `/retro` | Session retrospective |
