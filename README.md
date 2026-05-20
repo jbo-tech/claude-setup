@@ -1,6 +1,6 @@
 # Claude Setup
 
-Personal configuration for Claude Code: commands, agents and skills.
+Personal configuration for Claude Code: commands, agents and skills. Designed to **complement** the public ecosystem (superpowers, astronomer-data, vercel-*, etc.) rather than duplicate it.
 
 ## Installation
 
@@ -20,33 +20,19 @@ cp -r claude-setup/claude/* ~/.claude/
 **With pipx (recommended)**
 
 ```bash
-# Install pipx if not already done
 brew install pipx
 pipx ensurepath
-
-# Restart terminal or
 source ~/.zshrc
-
-# Install ruff globally
 pipx install ruff
-
-# Verify
-which ruff
-# → ~/.local/bin/ruff
+which ruff   # → ~/.local/bin/ruff
 ```
 
 **With uv (modern alternative)**
 
 ```bash
-# Install uv if not already done
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install ruff as a global tool
 uv tool install ruff
-
-# Verify
-which ruff
-# → ~/.local/bin/ruff
+which ruff   # → ~/.local/bin/ruff
 ```
 
 **With pip**
@@ -72,58 +58,46 @@ claude/
 | Command | Description |
 |---------|-------------|
 | `/bootstrap` | Initialize project context |
-| `/scope` | Entry point (what/why/how) |
+| `/scope` | Entry point (what / why / how) — hands off to `/goal` |
 | `/explore [tag]` | Exploration (tags: `technical`, `architecture`, `business`, `user`) |
-| `/audit` | Code audit |
-| `/decompose` | Decompose into parallelizable tasks |
-| `/decompose-run` | Execute decomposed tasks sequentially, one commit per task |
-| `/tdd-loop` | Iterative red/green/refactor loop until acceptance criteria met |
-| `/commit` | Git commit |
-| `/pr` | Create PR |
+| `/audit` | General code audit (security, optimization, homogeneity) |
+| `/audit-ml` | Specialized ML / DL audit (leakage, validation, serving) |
+| `/audit-accessibility` | Specialized accessibility audit (WCAG / ARIA / RGAA) |
+| `/git-commit` | Git commit |
 | `/retro` | Session retrospective |
-| `/worktree-setup` | Setup for git worktree parallelism |
-| `/worktree-merge` | Merge worktrees |
 
 ## Workflow
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       /bootstrap                            │
-│                   (project context)                         │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                        /explore                             │
-│                    (understanding)                          │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                         /scope                              │
-│                    (what/why/how)                            │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-              ┌─────────────┴─────────────┐
-              ↓                           ↓
-          Clear?                      Unclear?
-              ↓                           ↓
-    ┌─────────┴─────────┐             /explore
-    ↓                   ↓                 ↓
-  Small               Large          [clarify]
-    ↓                   ↓                 ↓
-  Code              /decompose      Back to /scope
-    ↓                   ↓
- /commit            worktrees
-    ↓                   ↓
- /retro               merge
-                        ↓
-                     /retro
+┌─────────────┐
+│ /bootstrap  │  (project context)
+└─────────────┘
+       ↓
+┌─────────────┐
+│  /explore   │  (understanding)
+└─────────────┘
+       ↓
+┌─────────────┐
+│   /scope    │  (what / why / how)
+└─────────────┘
+       ↓
+   Clear? ──→ Unclear → /explore [tag] → back to /scope
+       ↓
+   ┌───────┴───────┐
+   ↓               ↓
+  Code         /goal (autonomous execution)
+   ↓               ↓
+/git-commit   /git-commit
+   ↓               ↓
+       /retro
 ```
+
+Specialized audits (`/audit`, `/audit-ml`, `/audit-accessibility`) are called on demand throughout the flow.
 
 ## Agents
 
 | Agent | Triggers |
 |-------|----------|
-| `data-ml-expert` | data leakage, preprocessing, cross-validation, pipeline, feature, training |
 | `infra-expert` | container, dockerfile, compose, deploy, kubernetes, systemd |
 | `creative-director` | brainstorm, naming, concept, creative, branding, vision |
 
@@ -132,7 +106,28 @@ claude/
 | Skill | Description |
 |-------|-------------|
 | `agent-builder` | Create specialized agents |
-| `skill-factory` | Create skills |
+| `creative-direction` | Naming, branding, creative direction workflow |
+| `data-engineering` | Open-source data pipelines (DuckDB, Parquet, Kestra, MinIO) |
+| `infra-containers` | Open-source containerization (Docker, Podman, K3s, Kestra) |
+| `security-review` | Security best practices for code and infrastructure |
+
+## Composition with the public ecosystem
+
+This setup is **intentionally minimal**. Many workflows are already covered by public skills and plugins — duplicating them locally only adds noise.
+
+| Need | This setup | Public coverage |
+|------|------------|-----------------|
+| TDD red/green/refactor | — | `superpowers:test-driven-development` |
+| Plan a multi-step feature | — | `superpowers:writing-plans` |
+| Execute a plan | `/goal` (native) | `superpowers:executing-plans` / `subagent-driven-development` |
+| Worktrees / isolated workspace | — | `superpowers:using-git-worktrees` |
+| Finish a branch (merge / PR) | — | `superpowers:finishing-a-development-branch` |
+| Brainstorm / ideation | `creative-direction` skill | `superpowers:brainstorming` |
+| Airflow / dbt / Snowflake | — | `astronomer-data:*` |
+| Vercel / Next.js | — | `vercel-*` |
+| Frontend design / UI generation | — | `frontend-design`, `taste-design`, `stitch-*` |
+
+What this setup **adds** : the `/scope → /goal` handoff with a structured success-criteria block, the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
 
 ## Configuration
 
