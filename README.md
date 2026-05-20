@@ -7,15 +7,45 @@ Personal configuration for Claude Code: commands, agents and skills. Designed to
 ```bash
 # Clone the repo
 git clone https://github.com/jbo-tech/claude-setup.git
+cd claude-setup
 
-# Copy contents to ~/.claude/
-cp -r claude-setup/claude/* ~/.claude/
+# Preview what would be installed (no changes)
+./install.sh --dry-run
 
-# Install ruff (required for the Python formatting hook)
-# See "Installing ruff" section below
+# Install — creates symlinks from ~/.claude/ to this repo
+./install.sh
 ```
 
-### Installing ruff
+The installer uses **symlinks**, not copies. Editing files in the repo applies immediately to your `~/.claude/` setup — and `git pull` updates everything in place.
+
+On conflict (existing file at a target path), the installer asks per file :
+- `[v]iew diff` — show what differs
+- `[b]ackup-and-link` — save the existing file to `~/.claude/.backups/<timestamp>/`, then symlink
+- `[s]kip` — leave the existing file alone
+- `[a]bort all` — stop the run, keep everything done so far
+
+A manifest is written at `~/.claude/.claude-setup-manifest` listing every symlink created. The installer never touches `~/.claude/plugins/` (third-party plugins) and never removes files not in the manifest.
+
+### Uninstall
+
+```bash
+./uninstall.sh --dry-run    # preview
+./uninstall.sh              # remove our symlinks
+```
+
+Safety: only symlinks that still point to this repo are removed. Anything you modified (replaced with a regular file, re-pointed elsewhere) is preserved with a warning. Backups under `~/.claude/.backups/` are never removed automatically.
+
+### Custom install location
+
+Set `CLAUDE_HOME` if your config lives elsewhere :
+
+```bash
+CLAUDE_HOME=/path/to/.claude ./install.sh
+```
+
+### Ruff (Python formatting hook)
+
+The `settings.json` ships a hook that runs `ruff format` after Python file edits. The installer warns if `ruff` is not in `PATH`, but does not install it for you.
 
 **With pipx (recommended)**
 
