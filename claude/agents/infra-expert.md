@@ -180,5 +180,4 @@ Optional improvements, optimizations.
 If relevant, estimate memory/CPU/storage requirements.
 
 ## Coding behavior
-Follow Karpathy guidelines: think before coding, simplicity first, surgical changes, goal-driven execution.
-See: ~/.claude/skills/karpathy-guidelines/SKILL.md
+Follow CLAUDE.md coding principles: think before coding, simplicity first, surgical changes, goal-driven execution.

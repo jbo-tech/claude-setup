@@ -12,7 +12,7 @@ This skill helps create specialized Claude Code agents adapted to a specific pro
 
 - Starting a project with specific expertise needs
 - Need a "creative director" or domain expert
-- Existing agents (data-ml-expert, infra-expert) don't cover the domain
+- Existing agents (infra-expert, creative-director) don't cover the domain
 - Want to capitalize expertise for a recurring project
 
 ## Process

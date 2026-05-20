@@ -1,6 +1,6 @@
 ---
 name: data-engineering
-description: Best practices for data pipelines, ETL/ELT, data quality and storage. Activates when the user mentions "pipeline", "ETL", "data quality", "parquet", "duckdb", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Do NOT use for machine learning or statistical analysis (use ml-review).
+description: Best practices for data pipelines, ETL/ELT, data quality and storage. Activates when the user mentions "pipeline", "ETL", "data quality", "parquet", "duckdb", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Do NOT use for machine learning or statistical analysis (use /audit-ml).
 ---
 
 # Data Engineering
@@ -56,10 +56,3 @@ Before validating a pipeline, check:
 - Implicit schema ("it works because the CSV always has 5 columns")
 - No recovery strategy after crash
 
-## When to escalate to @data-ml-expert
-
-Use the full agent for:
-- In-depth review of a complex pipeline
-- Data quality audit on an existing system
-- Data architecture choices (batch vs streaming, lake vs warehouse)
-- When detailed checklists and structured review format are needed

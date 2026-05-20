@@ -34,10 +34,12 @@
 - Don't "improve" adjacent code unless asked.
 - Match existing style.
 - Remove only what YOUR changes made unused.
+- Spot unrelated dead code? Mention it — don't delete unprompted.
 
 ### Goal-driven execution
 - Transform tasks into verifiable criteria.
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before AND after"
 
 ## Communication
 - Be direct and concise
