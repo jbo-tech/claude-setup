@@ -125,22 +125,35 @@ Don't over-interrogate small requests. Don't under-explore large ones.
 Based on size and clarity:
 
 **Micro/Small + clear**:
-> "Ready to implement?"
+> "Ready to implement, or do you want to hand this off to `/goal` for autonomous execution?"
 
 **Micro/Small + unclear**:
 > "Some aspects need clarification. Run `/explore [aspect]` first?"
 
 **Medium/Large + clear**:
-> "Ready for implementation. Want to `/decompose` for parallel work, or start coding?"
+> "Ready for implementation. Want to hand off to `/goal` with the success criteria as the completion condition?"
 
 **Medium/Large + unclear**:
 > "Open questions remain. Run `/explore [topic]` to clarify before proceeding?"
+
+## Handoff to `/goal`
+
+The **Success criteria** section is structured as a machine-readable checklist so `/goal` can read it as a completion condition. When the user accepts the handoff:
+
+1. Confirm the scope file path (default: `.claude/context/scope.md`).
+2. Suggest the invocation, framing the success criteria as the goal :
+
+   > `/goal Complete the scope at <path>. Done when all Success criteria checkboxes are met.`
+
+3. `/goal` then drives execution and ticks the boxes as criteria are verified.
+
+Keep success criteria **observable and testable**. If a criterion can't be ticked from a test or a visible outcome, rewrite it.
 
 ## Decision points
 
 After scoping, the user can:
 - **Code directly** — if scope is clear and small enough
-- **`/decompose`** — if project benefits from parallel execution
+- **`/goal`** — hand off to autonomous execution against the success criteria
 - **`/explore`** — if critical questions surfaced
 - **`@expert`** — if domain review needed before starting
 

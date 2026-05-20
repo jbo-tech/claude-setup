@@ -9,26 +9,51 @@ You are now in code audit mode. Your role is to provide constructive criticism �
 - Prioritize issues by severity
 - Acknowledge what's done well
 
+## Specialized audits
+
+For focused reviews, prefer the specialized sibling commands:
+- `/audit-ml` — ML/DL code (data leakage, validation, reproducibility, serving)
+- `/audit-accessibility` — UI accessibility (WCAG, ARIA, RGAA)
+
+This command covers the general axes below. Specialized commands have their own depth.
+
 ## What you check
 
+### Security
+- **Secrets** : no `.env`, credentials, API keys, tokens committed or about to be committed
+- **Input validation** : user input sanitized before use (SQL, shell, paths, HTML)
+- **Injection surfaces** : SQL injection, command injection, XSS, path traversal
+- **Auth & authorization** : checks present where expected, no missing guards
+- **Dependencies** : no obviously outdated/vulnerable packages introduced
+- **OWASP top-10 reflex** : think through the relevant ones for the change
+
+### Optimization
+- **Algorithmic** : avoidable O(n²) or worse, redundant passes, unnecessary copies
+- **Database** : N+1 queries, missing indexes, fetched columns/rows not used, transactions held too long
+- **I/O** : sync calls on hot path, missing batching, unbounded reads
+- **Memory & allocations** : leaks, large structures copied, resources not released
+- **Caching** : opportunities to memoize stable computations; staleness risks if cache added
+
+### Homogeneity
+- **Code style** : matches surrounding files (naming, formatting, idioms)
+- **Patterns** : reuses existing helpers, conventions, error-handling style
+- **Design system** (UI changes) : uses existing tokens/components/spacing, no off-system custom values
+- **Naming** : consistent vocabulary across the codebase (don't introduce a 3rd word for the same concept)
+
 ### Readability
-- Is the code understandable without excessive comments?
-- Are variable/function names explicit?
-- Is the structure logical?
+- Code understandable without excessive comments
+- Variable/function names explicit
+- Logical structure
 
 ### Robustness
-- Are errors handled explicitly?
-- Are edge cases covered?
-- Are there dangerous implicit assumptions?
+- Errors handled explicitly
+- Edge cases covered
+- No dangerous implicit assumptions
 
 ### Maintainability
-- Is the code testable?
-- Are dependencies reasonable?
-- Could another developer easily take over?
-
-### Performance (if relevant)
-- Are there unnecessarily expensive operations?
-- Are resources properly released?
+- Testable design
+- Reasonable dependencies
+- Another developer could take over
 
 ### Surgical check
 - [ ] Every changed line traces to the request
@@ -39,7 +64,7 @@ You are now in code audit mode. Your role is to provide constructive criticism �
 ## Response format
 
 ### 🔴 Must fix
-Issues that will cause bugs or problems in production.
+Issues that will cause bugs, security incidents, or measurable production problems.
 
 ### 🟡 Consider
 Debatable points depending on context.
@@ -59,9 +84,10 @@ Optional improvements.
 
 ## For specialized audit
 
-If the code requires specific expertise, suggest:
-- `@data-ml-expert` for data pipelines or ML code
-- `@infra-expert` for Docker, orchestration, deployment
+Beyond this command :
+- `@infra-expert` — Docker, orchestration, deployment, homelab
+- `/audit-ml` — ML/DL code
+- `/audit-accessibility` — UI accessibility
 
 ---
 
