@@ -14,17 +14,21 @@ cd claude-setup
 
 # Install — creates symlinks from ~/.claude/ to this repo
 ./install.sh
+
+# Auto-backup all conflicts without prompting
+./install.sh -y
 ```
 
 The installer uses **symlinks**, not copies. Editing files in the repo applies immediately to your `~/.claude/` setup — and `git pull` updates everything in place.
 
 On conflict (existing file at a target path), the installer asks per file :
 - `[v]iew diff` — show what differs
-- `[b]ackup-and-link` — save the existing file to `~/.claude/.backups/<timestamp>/`, then symlink
+- `[b]ackup` — save the existing file, then symlink
+- `backup-[a]ll` — backup this and all remaining conflicts without prompting
 - `[s]kip` — leave the existing file alone
-- `[a]bort all` — stop the run, keep everything done so far
+- `[q]uit` — stop the run, keep everything done so far
 
-A manifest is written at `~/.claude/.claude-setup-manifest` listing every symlink created. The installer never touches `~/.claude/plugins/` (third-party plugins) and never removes files not in the manifest.
+Backups are stored in `.backups/<timestamp>/` at the repo root (gitignored). A manifest is written at `~/.claude/.claude-setup-manifest` listing every symlink created. The installer never touches `~/.claude/plugins/` (third-party plugins) and never removes files not in the manifest.
 
 ### Uninstall
 
@@ -33,7 +37,7 @@ A manifest is written at `~/.claude/.claude-setup-manifest` listing every symlin
 ./uninstall.sh              # remove our symlinks
 ```
 
-Safety: only symlinks that still point to this repo are removed. Anything you modified (replaced with a regular file, re-pointed elsewhere) is preserved with a warning. Backups under `~/.claude/.backups/` are never removed automatically.
+Safety: only symlinks that still point to this repo are removed. Anything you modified (replaced with a regular file, re-pointed elsewhere) is preserved with a warning. Backups under `.backups/` are never removed automatically.
 
 ### Custom install location
 
@@ -76,11 +80,11 @@ pip install ruff
 ```
 claude/
 ├── CLAUDE.md              # Global preferences
-├── settings.json          # Permissions and hooks
+├── settings.json          # Permissions, hooks and status line
 ├── commands/              # Slash commands
 ├── agents/                # Specialized agents
 ├── skills/                # Skills with templates
-└── scripts/               # Utility scripts
+└── scripts/               # Status line and utility scripts
 ```
 
 ## Commands
@@ -159,6 +163,20 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 
 What this setup **adds** : the `/scope → /goal` handoff with a structured success-criteria block, the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
 
+## Status line
+
+`statusline.py` displays context window usage, 5-hour and 7-day rate limit quotas with color-coded alerts (green/yellow/red) and remaining time. Requires Python 3.
+
+```
+Opus | project:main ● | ctx ▓░░░░░░░░░ 7% | 5h ░░░░░ 3% ~4h46 | 7d ▓▓░░░ 49% ~3d
+```
+
+The previous `context-bar.sh` (bash/jq) is still available — switch in `settings.json` :
+
+```json
+"statusLine": { "command": "~/.claude/scripts/context-bar.sh" }
+```
+
 ## Configuration
 
 ### settings.json
@@ -166,6 +184,7 @@ What this setup **adds** : the `/scope → /goal` handoff with a structured succ
 - **Model**: opus
 - **Permissions**: git, python, pytest, ruff, make, docker, uv, pip, npm, gh
 - **Ruff hook**: automatic formatting of Python files after write
+- **Status line**: `statusline.py` with 60s refresh interval
 
 ## License
 
