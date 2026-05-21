@@ -42,5 +42,8 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Install backups
+.backups/
+
 # Claude
 .claude/
