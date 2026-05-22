@@ -81,7 +81,7 @@ def main():
     # Contexte
     ctx_pct = int(data.get('context_window', {}).get('used_percentage', 0) or 0)
     ctx_c = color_for(ctx_pct, 50, 80)
-    ctx_seg = f"{GRAY}ctx{RESET} {bar(ctx_pct, 10, ctx_c)} {ctx_c}{ctx_pct}%{RESET}"
+    ctx_seg = f"{GRAY}CTX{RESET} {bar(ctx_pct, 10, ctx_c)} {ctx_c}{ctx_pct}%{RESET}"
 
     # Quota 5h (seuils : jaune 50%, rouge 80%)
     rl = data.get('rate_limits', {})
@@ -104,6 +104,11 @@ def main():
 
     sep = f" {GRAY}|{RESET} "
     print(f"{ACCENT}{model}{sep}{git_seg}{sep}{ctx_seg}{sep}{fh_seg}{sep}{sd_seg}")
+
+    if ctx_pct >= 80:
+        print(f"  {RED}>>{RESET} {GRAY}/compact now or /clear to finish{RESET}")
+    elif ctx_pct >= 50:
+        print(f"  {YELLOW}>{RESET} {GRAY}/clear (new task) {DIM}|{GRAY} /compact (same task) {DIM}| plan>exec>verify>commit>clear{RESET}")
 
 
 main()
