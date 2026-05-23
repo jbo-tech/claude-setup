@@ -1,6 +1,7 @@
 # Global Preferences
 
 ## Language
+- Conversation: match the user's language (French by default)
 - Comments and docstrings: English
 - Commit messages: English (conventional commits)
 - Variable/function names: English
