@@ -108,7 +108,7 @@ def main():
     if ctx_pct >= 80:
         print(f"  {RED}>>{RESET} {GRAY}/compact now or /clear to finish{RESET}")
     elif ctx_pct >= 50:
-        print(f"  {YELLOW}>{RESET} {GRAY}/clear (new task) {DIM}|{GRAY} /compact (same task) {DIM}| plan>exec>verify>commit>clear{RESET}")
+        print(f"  {YELLOW}>{RESET} {GRAY}/compact (same task) {DIM}|{GRAY} /clear (new task) {DIM}| plan > exec > verify > commit > clear{RESET}")
 
 
 main()
