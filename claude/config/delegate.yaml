@@ -1,0 +1,49 @@
+# Delegate Configuration
+# Installed to ~/.config/claude-code/delegate.yaml
+#
+# Claude Code delegates coding tasks to a cheaper agent CLI.
+# Claude orchestrates (decomposes the task) and reviews (reads git diff).
+# The agent executes (reads/writes files autonomously).
+
+# =============================================================================
+# Backends Configuration
+# =============================================================================
+#
+# Supported backends:
+#   - vibe      → Mistral Vibe CLI (needs: vibe installed + authenticated)
+#   - opencode  → OpenCode CLI (needs: opencode installed + /connect done)
+#
+# Priority: lowest number = preferred. The script picks the first
+# enabled backend by priority whose command is found in PATH.
+#
+# Model: optional override — if omitted, the backend uses its own default.
+#   - vibe: model alias from ~/.vibe/config.toml (injected via VIBE_ACTIVE_MODEL env var)
+#   - opencode: provider/model format (injected via --model flag)
+
+backends:
+  - name: "vibe"
+    command: "vibe"
+    args: "--agent coder -p {prompt} --trust --max-turns {timeout} --output streaming"
+    workdir_flag: "--workdir"
+    model: "deepseek-flash"
+    enabled: true
+    priority: 1
+    needs_pty: true
+
+  - name: "opencode"
+    command: "opencode"
+    args: "run {prompt}"
+    workdir_flag: "--dir"
+    model: "deepseek-chat"
+    model_flag: "--model"
+    enabled: true
+    priority: 2
+    needs_pty: false
+
+# =============================================================================
+# Settings
+# =============================================================================
+
+settings:
+  default_timeout: 120
+  log_file: "~/.local/share/claude-code/delegate-runs.jsonl"

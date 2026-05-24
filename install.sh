@@ -301,6 +301,27 @@ install_dir_dirs() {
   done
 }
 
+# --- Installation des fichiers de config (copie, pas symlink) ---
+# Ces fichiers vivent dans ~/.config/ et sont modifiés par l'utilisateur.
+# On copie uniquement si le fichier n'existe pas déjà (pas d'écrasement).
+install_config_files() {
+  local config_dir="$HOME/.config/claude-code"
+  local src="$SOURCE/config/delegate.yaml"
+  local dst="$config_dir/delegate.yaml"
+  [ -f "$src" ] || return 0
+  if [ -f "$dst" ]; then
+    note "[config unchanged] $dst (already exists)"
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    note "[would copy config] $src → $dst"
+  else
+    mkdir -p "$config_dir"
+    cp "$src" "$dst"
+    note "[config copied] $dst"
+  fi
+}
+
 # --- Vérification de ruff (formateur Python) ---
 # command -v : vérifie si une commande existe dans le PATH (plus fiable que which)
 check_ruff() {
@@ -340,6 +361,7 @@ main() {
   install_file_dirs
   install_dir_dirs
 
+  install_config_files
   check_ruff
 
   log ""
