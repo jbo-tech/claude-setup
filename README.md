@@ -160,8 +160,29 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 | Airflow / dbt / Snowflake | — | `astronomer-data:*` |
 | Vercel / Next.js | — | `vercel-*` |
 | Frontend design / UI generation | — | `frontend-design`, `taste-design`, `stitch-*` |
+| Delegate to cheaper models | — | `vibe-skill` (Mistral Vibe) |
 
 What this setup **adds** : the `/scope → /goal` handoff with a structured success-criteria block, the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
+
+### Recommended companions
+
+Install these plugins and skills from within Claude Code to unlock the workflows listed above.
+
+**Plugins** (via `/install-plugin`):
+
+| Plugin | Source | Provides |
+|--------|--------|----------|
+| `superpowers` | `anthropics/claude-plugins-official` | TDD, plans, worktrees, branch finishing, brainstorming |
+| `frontend-design` | `anthropics/claude-plugins-official` | UI/UX generation and design review |
+| `remember` | `anthropics/claude-plugins-official` | Persistent memory across conversations |
+
+**Third-party skills** (clone + symlink into `~/.claude/skills/`):
+
+| Skill | Repo | Provides |
+|-------|------|----------|
+| `vibe-skill` | [`pcx-wave/vibe-skill`](https://github.com/pcx-wave/vibe-skill) | Delegate coding tasks to Mistral Vibe — saves tokens and context window |
+
+All plugins from `anthropics/claude-plugins-official` can be browsed and installed interactively with `/install-plugin` inside Claude Code. Third-party skills require manual installation — see each repo's README for instructions.
 
 ## Status line
 
