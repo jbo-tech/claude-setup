@@ -28,7 +28,7 @@ backends:
     command: "vibe"
     args: '--agent auto-approve -p "$(cat {prompt_file})" --trust --max-turns {timeout} --output streaming'
     workdir_flag: "--workdir"
-    model: "deepseek-v4-pro"
+    model: "mistral-medium-3-5"
     enabled: true
     priority: 1
     needs_pty: true
@@ -37,7 +37,7 @@ backends:
     command: "opencode"
     args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "deepseek/deepseek-v4-pro"
+    model: "openrouter/qwen/qwen3-30b-a3b"
     model_flag: "--model"
     enabled: true
     priority: 2

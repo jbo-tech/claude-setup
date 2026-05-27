@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Parse optional --backend flag
+# Parse --backend flag (position-independent)
 BACKEND_OVERRIDE=""
+POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --backend) BACKEND_OVERRIDE="$2"; shift 2 ;;
-    *) break ;;
+    *) POSITIONAL+=("$1"); shift ;;
   esac
 done
+set -- "${POSITIONAL[@]+"${POSITIONAL[@]}"}"
 
 WORKDIR="${1:-.}"
 PROMPT="${2:?Usage: delegate.sh [--backend <name>] <workdir> <prompt> [timeout]}"
