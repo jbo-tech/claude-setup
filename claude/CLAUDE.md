@@ -66,6 +66,14 @@ For every technical choice, explain:
 - Two scripts available: `statusline.py` (default, Python) and `context-bar.sh` (legacy, bash)
 - Switch via `statusLine.command` in `settings.json`
 
+## Delegation
+
+When `.claude/delegate-auto` exists in the project root, delegate ALL implementation tasks through `/delegate` automatically. Do not ask — just decompose, delegate, and review.
+
+Always review the `git diff` after delegation — auto-mode delegates execution, not judgment.
+
+Skip delegation for: tasks requiring MCP tools, complex multi-file refactoring, architecture decisions, or security-sensitive changes. Handle these directly.
+
 ## Role-Based Personalities
 
 **For debugging**: "I'm methodical and patient. Let's trace this step by step."

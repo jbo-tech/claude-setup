@@ -97,6 +97,10 @@ claude/
 | `/audit` | General code audit (security, optimization, homogeneity) |
 | `/audit-ml` | Specialized ML / DL audit (leakage, validation, serving) |
 | `/audit-accessibility` | Specialized accessibility audit (WCAG / ARIA / RGAA) |
+| `/delegate` | Delegate coding task to cheaper agent CLI |
+| `/delegate-on` | Enable auto-delegation for project |
+| `/delegate-off` | Disable auto-delegation |
+| `/delegate-status` | Show delegation backend status |
 | `/git-commit` | Git commit |
 | `/retro` | Session retrospective |
 
@@ -122,8 +126,15 @@ claude/
   Code         /goal (autonomous execution)
    ↓               ↓
 /git-commit   /git-commit
-   ↓               ↓
-       /retro
+   └───┬───────────┘
+       ↓
+  delegate-auto? ──→ oui → /delegate (cheaper model)
+       ↓
+      non → code direct
+       ↓
+   /git-commit
+       ↓
+     /retro
 ```
 
 Specialized audits (`/audit`, `/audit-ml`, `/audit-accessibility`) are called on demand throughout the flow.
@@ -160,9 +171,9 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 | Airflow / dbt / Snowflake | — | `astronomer-data:*` |
 | Vercel / Next.js | — | `vercel-*` |
 | Frontend design / UI generation | — | `frontend-design`, `taste-design`, `stitch-*` |
-| Delegate to cheaper models | — | `vibe-skill` (Mistral Vibe) |
+| Delegate to cheaper models | `/delegate` + `/delegate-on` | `vibe-skill` (Mistral Vibe) |
 
-What this setup **adds** : the `/scope → /goal` handoff with a structured success-criteria block, the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
+What this setup **adds** : the `/scope → /goal` handoff with structured success criteria, auto-delegation to cheaper models via `/delegate`, the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
 
 ### Recommended companions
 

@@ -15,26 +15,29 @@
 #
 # Priority: lowest number = preferred. The script picks the first
 # enabled backend by priority whose command is found in PATH.
+# Override at runtime: delegate.sh --backend opencode ...
 #
 # Model: optional override — if omitted, the backend uses its own default.
 #   - vibe: model alias from ~/.vibe/config.toml (injected via VIBE_ACTIVE_MODEL env var)
 #   - opencode: provider/model format (injected via --model flag)
+#
+# Prompt: passed via temp file. Use {prompt_file} in args (read with $(cat ...)).
 
 backends:
   - name: "vibe"
     command: "vibe"
-    args: "--agent coder -p {prompt} --trust --max-turns {timeout} --output streaming"
+    args: '--agent auto-approve -p "$(cat {prompt_file})" --trust --max-turns {timeout} --output streaming'
     workdir_flag: "--workdir"
-    model: "deepseek-flash"
+    model: "deepseek-v4-pro"
     enabled: true
     priority: 1
     needs_pty: true
 
   - name: "opencode"
     command: "opencode"
-    args: "run {prompt}"
+    args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "deepseek-chat"
+    model: "deepseek/deepseek-v4-pro"
     model_flag: "--model"
     enabled: true
     priority: 2

@@ -7,9 +7,18 @@ Show current delegation status.
 1. **Config**: Read and display the active backend from `~/.config/claude-code/delegate.yaml`:
    ```bash
    python3 -c "
-   import yaml, os
+   try:
+       import yaml
+   except ImportError:
+       print('  ERROR: pyyaml not installed. Run: pip install pyyaml')
+       raise SystemExit(1)
+   import os
    from shutil import which
-   with open(os.path.expanduser('~/.config/claude-code/delegate.yaml')) as f:
+   path = os.path.expanduser('~/.config/claude-code/delegate.yaml')
+   if not os.path.exists(path):
+       print('  No config found at', path)
+       raise SystemExit(0)
+   with open(path) as f:
        cfg = yaml.safe_load(f)
    backends = sorted(
        [b for b in cfg.get('backends', []) if b.get('enabled')],

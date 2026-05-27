@@ -73,11 +73,20 @@ Good delegate prompts are:
 - **Specific**: Include exact file paths, function names, line references
 - **Self-contained**: The agent knows nothing about our conversation
 - **Bounded**: One clear task, not "improve the codebase"
+- **Scope-locked** (mandatory): Always end with an explicit scope boundary
+
+### Scope-lock rule
+
+Every delegate prompt MUST end with a scope boundary line:
+
+> You must ONLY edit the file(s) at: [list exact paths]. Do not create, delete, or modify any other file.
+
+This prevents the delegate agent from "helpfully" refactoring adjacent files. Cheap models have weak instruction-following on scope boundaries — the explicit constraint is the only reliable guard.
 
 ### Example prompts
 
 Good:
-> In src/auth/signup.py, add email format validation to the `validate_email()` function (line 42). Use a regex pattern. Return False for invalid emails. Add 3 test cases in tests/test_signup.py.
+> In src/auth/signup.py, add email format validation to the `validate_email()` function (line 42). Use a regex pattern. Return False for invalid emails. Add 3 test cases in tests/test_signup.py. You must ONLY edit the files at: src/auth/signup.py, tests/test_signup.py. Do not create, delete, or modify any other file.
 
 Bad:
 > Fix the email thing we discussed earlier.
