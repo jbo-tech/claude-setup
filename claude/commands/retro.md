@@ -64,27 +64,13 @@ If technical decisions were made, append to `.claude/context/decisions.md`:
 
 Only add entries for **significant decisions** that affect project direction.
 
-### 5. Suggest CLAUDE.md updates (DO NOT APPLY)
+### 5. Update CLAUDE.md (APPLY)
 
-If conventions or critical info should be added to CLAUDE.md, **suggest but do not modify**:
+If conventions or critical info should be added to CLAUDE.md, **apply the changes directly**. The user will review via `git diff` after the retro.
 
-```
-Suggested addition to CLAUDE.md:
-> [proposed content]
-```
+### 6. Update README.md (APPLY)
 
-The user will apply manually after review.
-
-### 6. Suggest README.md updates (DO NOT APPLY)
-
-If the session changed functionality, usage, structure or dependencies, and a README.md exists at the project root, **suggest updates but do not modify**:
-
-```
-Suggested update to README.md:
-> [proposed content]
-```
-
-The user will apply manually after review.
+If the session changed functionality, usage, structure or dependencies, and a README.md exists at the project root, **apply the updates directly**. The user will review via `git diff` after the retro.
 
 ## Output format
 
@@ -98,11 +84,11 @@ After updating files, summarize:
 - anti-patterns.md: [added X entries / no changes]
 - decisions.md: [added X entries / no changes]
 
-### Suggested for CLAUDE.md
-[suggestions or "None"]
+### CLAUDE.md
+[changes applied / no changes]
 
-### Suggested for README.md
-[suggestions or "None"]
+### README.md
+[changes applied / no changes]
 
 ### Ready for next session
 [One sentence: where we are and what's next]
@@ -112,7 +98,7 @@ After updating files, summarize:
 
 - **status.md**: Always rewrite entirely, preserve log history
 - **anti-patterns.md / decisions.md**: Append only, never delete existing entries
-- **CLAUDE.md**: Never modify directly, suggest only
+- **CLAUDE.md / README.md**: Apply changes directly, user reviews via `git diff`
 - Use today's date for all new entries
 - Keep entries concise — this is reference material, not documentation
 
