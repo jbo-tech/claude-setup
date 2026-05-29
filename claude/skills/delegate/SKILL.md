@@ -30,19 +30,33 @@ Break the user's request into a focused, self-contained prompt. The delegate age
 - What to change and why (be specific)
 - Any constraints or patterns to follow
 
-### Step 2 — Execute
+### Step 2 — Select task type
+
+Before running the script, pick the right `--task` flag based on context:
+
+| Context | `--task` | Model used |
+|---|---|---|
+| Python files, data scripts, ML code | `python` | qwen3.7-max |
+| Simple edits in any other language | `coding` | kimi-k2 (free) |
+| README, docs, copywriting, descriptions | `marketing` | deepseek-v4-pro |
+| Complex / multi-file / unclear | _(omit)_ | vibe/mistral (default) |
+
+When in doubt, omit `--task` — the default generalist backend handles all cases.
+
+### Step 3 — Execute
 
 Run the delegate script:
 
 ```bash
-~/.claude/scripts/delegate.sh <workdir> "<prompt>" [timeout]
+~/.claude/scripts/delegate.sh [--task <type>] <workdir> "<prompt>" [timeout]
 ```
 
+- `--task`: optional — routes to the specialized backend for that type
 - `workdir`: the project root (usually the current working directory)
 - `prompt`: the focused instruction for the delegate agent
 - `timeout`: optional, in seconds (default: from config)
 
-The script automatically selects the best available backend (by priority in `~/.config/claude-code/delegate.yaml`).
+The script selects the best available backend matching the task (by priority in `~/.config/claude-code/delegate.yaml`). Falls back to untagged generalist backends if no task-specific one is found.
 
 ### Step 3 — Review
 

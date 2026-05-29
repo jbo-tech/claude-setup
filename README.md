@@ -97,12 +97,25 @@ claude/
 | `/audit` | General code audit (security, optimization, homogeneity) |
 | `/audit-ml` | Specialized ML / DL audit (leakage, validation, serving) |
 | `/audit-accessibility` | Specialized accessibility audit (WCAG / ARIA / RGAA) |
-| `/delegate` | Delegate coding task to cheaper agent CLI |
+| `/delegate [--task <type>]` | Delegate coding task to cheaper agent CLI |
 | `/delegate-on` | Enable auto-delegation for project |
 | `/delegate-off` | Disable auto-delegation |
 | `/delegate-status` | Show delegation backend status |
 | `/git-commit` | Git commit |
 | `/retro` | Session retrospective |
+
+### Delegate — task routing
+
+`/delegate` routes to a specialized backend based on task type. Claude injects `--task` automatically — no manual flag needed.
+
+| `--task` | Model | Best for |
+|----------|-------|----------|
+| `coding` | kimi-k2.6 (openrouter) | Simple edits in any language |
+| `python` | qwen3.7-max (openrouter) | Python files, data scripts, ML code |
+| `marketing` | deepseek-v4-pro | README, docs, copywriting |
+| _(omit)_ | mistral-medium-3.5 (vibe) | Complex / multi-file / unclear |
+
+Backend config lives in `~/.config/claude-code/delegate.yaml`. Add or swap models without touching the skill.
 
 ## Workflow
 
@@ -173,7 +186,7 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 | Frontend design / UI generation | — | `frontend-design`, `taste-design`, `stitch-*` |
 | Delegate to cheaper models | `/delegate` + `/delegate-on` | `vibe-skill` (Mistral Vibe) |
 
-What this setup **adds** : the `/scope → /goal` handoff with structured success criteria, auto-delegation to cheaper models via `/delegate`, the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
+What this setup **adds** : the `/scope → /goal` handoff with structured success criteria, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
 
 ### Recommended companions
 

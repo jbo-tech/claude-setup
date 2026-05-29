@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Parse --backend flag (position-independent)
+# Parse flags (position-independent)
 BACKEND_OVERRIDE=""
+TASK_OVERRIDE=""
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --backend) BACKEND_OVERRIDE="$2"; shift 2 ;;
+    --task)    TASK_OVERRIDE="$2";    shift 2 ;;
     *) POSITIONAL+=("$1"); shift ;;
   esac
 done
 set -- "${POSITIONAL[@]+"${POSITIONAL[@]}"}"
 
 WORKDIR="${1:-.}"
-PROMPT="${2:?Usage: delegate.sh [--backend <name>] <workdir> <prompt> [timeout]}"
+PROMPT="${2:?Usage: delegate.sh [--backend <name>] [--task <type>] <workdir> <prompt> [timeout]}"
 TIMEOUT="${3:-}"
 
 CONFIG="${DELEGATE_CONFIG:-$HOME/.config/claude-code/delegate.yaml}"
@@ -30,7 +32,7 @@ PROMPT_FILE=$(mktemp /tmp/delegate-prompt.XXXXXX)
 trap 'rm -f "$PROMPT_FILE"' EXIT
 printf '%s' "$PROMPT" > "$PROMPT_FILE"
 
-# Parse YAML config — select backend by priority (or forced via --backend)
+# Parse YAML config — select backend by priority, task, or name override
 CONFIG_OUT=$(python3 -c "
 import yaml, sys, os
 from shutil import which
@@ -40,6 +42,7 @@ with open(os.path.expanduser('$CONFIG')) as f:
     cfg = yaml.safe_load(f) or {}
 
 override = '$BACKEND_OVERRIDE'
+task = '$TASK_OVERRIDE'
 backends = sorted(
     [b for b in cfg.get('backends', []) if b.get('enabled')],
     key=lambda b: b.get('priority', 99)
@@ -48,17 +51,27 @@ s = cfg.get('settings', {})
 print(f\"DEFAULT_TIMEOUT={s.get('default_timeout', 120)}\")
 print(f\"LOG_FILE={quote(s.get('log_file', '~/.local/share/claude-code/delegate-runs.jsonl'))}\")
 
-for b in backends:
-    if override and b['name'] != override:
-        continue
+if override:
+    candidates = [b for b in backends if b['name'] == override]
+    err_label = f'Backend {override!r} not found or not installed'
+elif task:
+    task_specific = [b for b in backends if b.get('task') == task]
+    candidates = task_specific if task_specific else [b for b in backends if not b.get('task')]
+    err_label = f'No backend found for task {task!r}'
+else:
+    candidates = [b for b in backends if not b.get('task')]
+    err_label = 'No enabled backend found in PATH'
+
+for b in candidates:
     if which(b['command']):
-        for k in ('name','command','args','workdir_flag','model','model_flag'):
+        for k in ('name','command','args','workdir_flag','model'):
             print(f\"{k.upper()}={quote(str(b.get(k, '')))}\")
+        default_flag = '' if b.get('command') == 'vibe' else '--model'
+        print(f\"MODEL_FLAG={quote(b.get('model_flag', default_flag))}\")
         print(f\"NEEDS_PTY={int(b.get('needs_pty', False))}\")
         sys.exit(0)
 
-label = f'Backend {override!r} not found or not installed' if override else 'No enabled backend found in PATH'
-print(f'[delegate] ERROR: {label}.', file=sys.stderr)
+print(f'[delegate] ERROR: {err_label}.', file=sys.stderr)
 sys.exit(1)
 ") || exit 1
 eval "$CONFIG_OUT"
@@ -77,7 +90,7 @@ elif [ -n "$MODEL" ]; then
   export VIBE_ACTIVE_MODEL="$MODEL"
 fi
 
-echo "[delegate] Backend: $NAME | Model: ${MODEL:-default} | Timeout: ${TIMEOUT}s"
+echo "[delegate] Backend: $NAME | Model: ${MODEL:-default} | Task: ${TASK_OVERRIDE:-default} | Timeout: ${TIMEOUT}s"
 echo "[delegate] Workdir: $WORKDIR"
 echo "[delegate] Running..."
 
@@ -103,7 +116,7 @@ import json, datetime
 with open('$LOG_FILE', 'a') as f:
     f.write(json.dumps({
         'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
-        'backend': '$NAME', 'model': '$MODEL' or None,
+        'backend': '$NAME', 'model': '$MODEL' or None, 'task': '$TASK_OVERRIDE' or None,
         'duration_secs': $DURATION, 'exit_code': $EXIT_CODE,
         'files_changed': $FILES_CHANGED, 'workdir': '$WORKDIR'
     }) + '\n')
