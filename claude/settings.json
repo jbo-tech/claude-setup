@@ -1,5 +1,4 @@
 {
-  "model": "opus",
   "permissions": {
     "allow": [
       "Read",
@@ -34,6 +33,7 @@
       "Bash(chmod 777 *)"
     ]
   },
+  "model": "claude-opus-4-8",
   "hooks": {
     "PostToolUse": [
       {
