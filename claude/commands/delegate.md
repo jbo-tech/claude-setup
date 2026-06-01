@@ -32,8 +32,9 @@ Delegate a coding task to a cheaper agent CLI. You orchestrate and review.
 
 ## Rules
 
+- **Explicit `/delegate` = decision made.** Delegate. Do not re-decide whether the task "should" be delegated, and do not handle it yourself. The only valid refusals are hard blockers: no backend available, or the task needs an MCP tool the delegate agent can't call — in which case say so and stop.
 - Always decompose before delegating — never pass the user's raw message
 - Always end the prompt with the scope-lock boundary
 - Always review the diff — never report success without inspecting changes
 - If files outside scope were modified, revert and retry with a narrower prompt
-- If the delegate fails, offer to retry with a refined prompt or handle directly
+- Only after the delegate **actually fails** (non-zero exit / broken output): offer to retry with a refined prompt, or to handle it directly. Never pre-empt a failure by handling the task yourself up front.

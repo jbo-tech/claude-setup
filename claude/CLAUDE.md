@@ -68,11 +68,13 @@ For every technical choice, explain:
 
 ## Delegation
 
-When `.claude/delegate-auto` exists in the project root, delegate ALL implementation tasks through `/delegate` automatically. Do not ask — just decompose, delegate, and review.
+When the user invokes `/delegate` explicitly, the decision is made — delegate, don't re-decide and don't do the task yourself. Refuse only on a hard blocker (no backend available, or the task needs an MCP tool the delegate agent can't call), and say so rather than handling it silently.
 
-Always review the `git diff` after delegation — auto-mode delegates execution, not judgment.
+When `.claude/delegate-auto` exists in the project root, delegate ALL implementation tasks automatically. Do not ask — decompose, delegate, and review.
 
-Skip delegation for: tasks requiring MCP tools, complex multi-file refactoring, architecture decisions, or security-sensitive changes. Handle these directly.
+Always review the `git diff` after delegation — delegation hands off execution, not judgment.
+
+Skip delegation (handle directly) only on a **verifiable** criterion: the task needs an MCP tool, touches more than ~5 files with genuine cross-file design choices, changes security-sensitive code (auth, crypto, secrets, permissions), or the goal itself is still undefined (open-ended exploration/debugging). "Feels complex" or "I'd do it better" is not a criterion.
 
 ## Role-Based Personalities
 

@@ -7,19 +7,32 @@ description: Delegate coding tasks to a cheaper agent CLI (Vibe CLI or OpenCode)
 
 Delegate implementation tasks to a cheaper coding agent. You orchestrate (decompose, write a focused prompt) and review (read the git diff). The agent executes autonomously.
 
+## Explicit invocation overrides the gate
+
+If the user invoked `/delegate` (or said "delegate this", "hand off", "offload this"), the decision is **already made** — delegate. The "When NOT to delegate" criteria below govern only *proactive* delegation (auto-mode, or deciding on your own whether to hand off). Do not re-litigate an explicit request.
+
+The only valid reasons to refuse an explicit `/delegate` are **hard blockers**:
+- No backend is installed/available, or
+- The task genuinely requires an MCP tool the delegate agent cannot call.
+
+In those cases, **say so and stop** — do not silently do the task yourself. "This feels complex / I'd do it better / it's faster if I handle it" is **not** a valid reason to override an explicit `/delegate`.
+
 ## When to delegate
 
 - Well-defined implementation tasks ("add validation to this function", "write tests for X")
 - File edits where the intent is clear and the scope is bounded
 - Repetitive changes across multiple files
 
-## When NOT to delegate
+## When NOT to delegate (proactive mode only)
 
-- Architecture decisions or design exploration
-- Tasks requiring MCP tools or Claude-specific features
-- Security-sensitive code changes
-- Complex multi-file refactoring where context matters
-- Debugging sessions requiring back-and-forth
+These criteria apply when **you** are deciding whether to hand off. They do **not** override an explicit `/delegate` (see above). Each must be **verifiable** — if you can't point to a concrete reason, the task is delegable.
+
+- **Requires an MCP tool** — the delegate agent has none.
+- **Touches more than ~5 files _and_ needs cross-file design decisions** that can't be written into the prompt as a flat spec. (Many-file mechanical edits are *ideal* delegation targets — count is not enough on its own.)
+- **Security-sensitive code**: auth, crypto, secret handling, permissions, access control.
+- **The goal itself is undefined** — open-ended exploration or debugging where you don't yet know what change to make. (Once the change is known, it's delegable.)
+
+"Feels complex", "context matters", or "I'd do it better" are **not** criteria. If none of the above is concretely true, delegate.
 
 ## How to delegate
 
