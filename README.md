@@ -103,17 +103,18 @@ claude/
 | `/delegate-status` | Show delegation backend status |
 | `/git-commit` | Git commit |
 | `/retro` | Session retrospective |
+| `/document` | Generate orientation docs (architecture + reference/drift) in `docs/` |
 
 ### Delegate — task routing
 
-`/delegate` routes to a specialized backend based on task type. Claude injects `--task` automatically — no manual flag needed.
+`/delegate` routes to a specialized backend based on task type. Claude injects `--task` automatically — no manual flag needed. Models use the **opencode-go** provider, ventilated by difficulty tier.
 
-| `--task` | Model | Best for |
+| `--task` | Model (tier) | Best for |
 |----------|-------|----------|
-| `coding` | kimi-k2.6 (openrouter) | Simple edits in any language |
-| `python` | qwen3.7-max (openrouter) | Python files, data scripts, ML code |
-| `marketing` | deepseek-v4-pro | README, docs, copywriting |
-| _(omit)_ | mistral-medium-3.5 (vibe) | Complex / multi-file / unclear |
+| `coding` | deepseek-v4-flash (easy) | Simple edits in any language |
+| `python` | minimax-m3 (complex) | Python files, data scripts, ML code |
+| `marketing` | deepseek-v4-pro (medium) | README, docs, copywriting |
+| _(omit)_ | deepseek-v4-pro / mistral-medium-3.5 (vibe) | Complex / multi-file / unclear |
 
 Backend config lives in `~/.config/claude-code/delegate.yaml`. Add or swap models without touching the skill.
 
