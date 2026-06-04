@@ -1,5 +1,5 @@
 ---
-generated_from_commit: ec44cd0
+generated_from_commit: dcbded0
 generated_on: 2026-06-04
 ---
 
