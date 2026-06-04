@@ -72,6 +72,46 @@ If conventions or critical info should be added to CLAUDE.md, **apply the change
 
 If the session changed functionality, usage, structure or dependencies, and a README.md exists at the project root, **apply the updates directly**. The user will review via `git diff` after the retro.
 
+### 7. Learning loop — capitalize (LIGHT, CONSERVATIVE, AUDITABLE)
+
+Turn this session's learnings into durable rules **at the right level**, without
+polluting context. **Propose, never auto-apply** to CLAUDE.md or skills. Only the
+candidate ledger updates silently (zero risk). Keep it light: one grouped block, no
+heavy analysis. If proposals get noisy, raise thresholds rather than add machinery.
+
+**3 axes** (a learning is qualified by all three, independently):
+- **Confidence** — promote only if: explicit user directive ("always/never/from now on")
+  → 1× is enough; OR recurrence ≥ 3; OR high cost-of-error. Otherwise it stays staged.
+- **Scope** — where it applies → picks the destination (see matrix).
+- **Relevance** — still true? Obsolete/contradicted rules trigger a purge proposal.
+
+**Candidate ledger** (`_candidates.jsonl` in this project's memory dir — same folder as
+`MEMORY.md`, kept OUT of the index so it costs no context):
+```json
+{"fingerprint":"stable-kebab-slug","summary":"one line","scope_guess":"cross-project|project|tech",
+ "count":2,"first_seen":"YYYY-MM-DD","last_seen":"YYYY-MM-DD","explicit":false,"high_cost":false}
+```
+
+**Steps:**
+1. Extract this session's learnings (explicit directives, recurring patterns, errors, decisions).
+2. Update the ledger: for each, find a *semantically equivalent* candidate (not exact wording)
+   and increment `count` + `last_seen`; else add a new entry (`count:1`). Plain JSONL read/write.
+3. **Promotion** — for candidates crossing the threshold (`explicit` OR `count>=3` OR `high_cost`),
+   route by the matrix and **propose** each (do not apply). On approval: write to the destination,
+   then remove the candidate from the ledger.
+4. **Purge** — propose (never auto) removing rules that name an absent file/symbol/flag, are
+   contradicted by a newer decision, or are dormant low-count candidates.
+
+**Routing matrix** (destination by scope, only once confidence is confirmed):
+| Scope | Destination |
+|---|---|
+| Cross-project | `~/.claude/CLAUDE.md` (global) + memory `type:feedback\|user` |
+| Project | `.claude/context/*` (**canonical at project level**) + project `CLAUDE.md` |
+| Tech / transferable pattern | a reusable **skill** (skill-factory) |
+
+`.claude/context/*` is the source of truth for project-level learnings; `memory/` holds only
+cross-project/global. Never infer scope silently — the user confirms each promotion.
+
 ## Output format
 
 After updating files, summarize:
@@ -90,15 +130,24 @@ After updating files, summarize:
 ### README.md
 [changes applied / no changes]
 
+### Learning loop
+- Promoted: [item → destination (trigger: explicit / count=N / high-cost) | none]
+- Purged: [rule removed (reason) | none]
+- Staged: [candidate (count=N) still below threshold | none]
+
 ### Ready for next session
 [One sentence: where we are and what's next]
 ```
 
+The Learning loop block must be **auditable**: for every promotion/purge, state which axis
+triggered it (explicit / count / cost / obsolete) so the decision can be replayed.
+
 ## Important rules
 
 - **status.md**: Always rewrite entirely, preserve log history
-- **anti-patterns.md / decisions.md**: Append only, never delete existing entries
+- **anti-patterns.md / decisions.md**: Append by default; delete only via an approved purge proposal (step 7)
 - **CLAUDE.md / README.md**: Apply changes directly, user reviews via `git diff`
+- **Learning loop (step 7)**: ledger updates silently; promotions/purges are always proposed, never auto-applied
 - Use today's date for all new entries
 - Keep entries concise — this is reference material, not documentation
 
