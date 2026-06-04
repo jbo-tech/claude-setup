@@ -104,8 +104,10 @@ fi
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 
-DIFF_STAT=$(cd "$WORKDIR" && git diff --stat 2>/dev/null || echo "(not a git repo)")
-FILES_CHANGED=$(cd "$WORKDIR" && git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+# git status --short counts BOTH modified (tracked) and new (untracked) files.
+# git diff alone misses files the agent created — they show as untracked.
+DIFF_STAT=$(cd "$WORKDIR" && git status --short 2>/dev/null || echo "(not a git repo)")
+FILES_CHANGED=$(cd "$WORKDIR" && git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 
 echo ""
 echo "[delegate] Exit code: $EXIT_CODE | Duration: ${DURATION}s | Files changed: $FILES_CHANGED"

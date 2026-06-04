@@ -24,11 +24,13 @@
 # Prompt: passed via temp file. Use {prompt_file} in args (read with $(cat ...)).
 
 backends:
+  # --- Generalist backends (no task tag — used when --task is omitted) ---
+
   - name: "vibe"
     command: "vibe"
     args: '--agent auto-approve -p "$(cat {prompt_file})" --trust --max-turns {timeout} --output streaming'
     workdir_flag: "--workdir"
-    model: "mistral-medium-3-5"
+    model: "mistral-medium-3.5"
     enabled: true
     priority: 1
     needs_pty: true
@@ -37,10 +39,47 @@ backends:
     command: "opencode"
     args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "openrouter/qwen/qwen3-30b-a3b"
-    model_flag: "--model"
+    model: "opencode-go/deepseek-v4-pro"  # medium tier
     enabled: true
     priority: 2
+    needs_pty: false
+
+  # --- Task-specialized backends (selected via --task flag) ---
+  # Provider: opencode-go (format: opencode-go/<model-id>)
+  # Tier mapping (benchmarks June 2026):
+  #   easy    -> deepseek-v4-flash  (79.0% SWE-verified, ~12x cheaper than Pro)
+  #   medium  -> deepseek-v4-pro    (80.6% SWE-verified, LiveCodeBench leader)
+  #   complex -> minimax-m3         (top open SWE-Pro 59.0%, strong reasoning)
+  #              alt: glm-5.1
+
+  - name: "opencode-coding"  # easy: bounded edits
+    command: "opencode"
+    args: 'run "$(cat {prompt_file})"'
+    workdir_flag: "--dir"
+    model: "opencode-go/deepseek-v4-flash"
+    task: "coding"
+    enabled: true
+    priority: 1
+    needs_pty: false
+
+  - name: "opencode-python"  # complex: algo/ML, correctness-sensitive
+    command: "opencode"
+    args: 'run "$(cat {prompt_file})"'
+    workdir_flag: "--dir"
+    model: "opencode-go/minimax-m3"  # alt: opencode-go/glm-5.1
+    task: "python"
+    enabled: true
+    priority: 1
+    needs_pty: false
+
+  - name: "opencode-marketing"  # medium: prose quality, runs rarely
+    command: "opencode"
+    args: 'run "$(cat {prompt_file})"'
+    workdir_flag: "--dir"
+    model: "opencode-go/deepseek-v4-pro"  # medium tier
+    task: "marketing"
+    enabled: true
+    priority: 1
     needs_pty: false
 
 # =============================================================================

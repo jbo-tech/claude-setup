@@ -47,12 +47,12 @@ Break the user's request into a focused, self-contained prompt. The delegate age
 
 Before running the script, pick the right `--task` flag based on context:
 
-| Context | `--task` | Model used |
-|---|---|---|
-| Python files, data scripts, ML code | `python` | qwen3.7-max |
-| Simple edits in any other language | `coding` | kimi-k2 (free) |
-| README, docs, copywriting, descriptions | `marketing` | deepseek-v4-pro |
-| Complex / multi-file / unclear | _(omit)_ | vibe/mistral (default) |
+| Context | `--task` | Model used | Tier |
+|---|---|---|---|
+| Python files, data scripts, ML code | `python` | MiniMax M3 (alt GLM-5.1) | complex |
+| Simple edits in any other language | `coding` | DeepSeek V4-Flash | easy |
+| README, docs, copywriting, descriptions | `marketing` | DeepSeek V4-Pro | medium |
+| Complex / multi-file / unclear | _(omit)_ | DeepSeek V4-Pro / vibe (default) | medium |
 
 When in doubt, omit `--task` — the default generalist backend handles all cases.
 
