@@ -115,8 +115,9 @@ cross-project/global. Never infer scope silently — the user confirms each prom
 ### 8. Docs freshness — flag only (do NOT rewrite)
 
 If `docs/architecture.md` exists with a `generated_from_commit` front-matter stamp, compare it
-to HEAD: `git diff --stat <stamp>..HEAD`. If meaningful changes landed since, flag that the
-orientation docs may be stale and suggest running `/document`. Never regenerate them here —
+to HEAD **excluding the docs themselves** (a doc isn't stale because it was committed):
+`git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'`. If meaningful code changed since, flag that
+the orientation docs may be stale and suggest running `/document`. Never regenerate them here —
 regeneration is `/document`'s job and stays an explicit choice. Skip silently if no such docs.
 
 ## Output format
