@@ -112,6 +112,13 @@ heavy analysis. If proposals get noisy, raise thresholds rather than add machine
 `.claude/context/*` is the source of truth for project-level learnings; `memory/` holds only
 cross-project/global. Never infer scope silently — the user confirms each promotion.
 
+### 8. Docs freshness — flag only (do NOT rewrite)
+
+If `docs/architecture.md` exists with a `generated_from_commit` front-matter stamp, compare it
+to HEAD: `git diff --stat <stamp>..HEAD`. If meaningful changes landed since, flag that the
+orientation docs may be stale and suggest running `/document`. Never regenerate them here —
+regeneration is `/document`'s job and stays an explicit choice. Skip silently if no such docs.
+
 ## Output format
 
 After updating files, summarize:
@@ -134,6 +141,9 @@ After updating files, summarize:
 - Promoted: [item → destination (trigger: explicit / count=N / high-cost) | none]
 - Purged: [rule removed (reason) | none]
 - Staged: [candidate (count=N) still below threshold | none]
+
+### Docs freshness
+[orientation docs may be stale — run /document (N files changed since stamp) | up to date | n/a]
 
 ### Ready for next session
 [One sentence: where we are and what's next]
