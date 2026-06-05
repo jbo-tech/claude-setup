@@ -50,6 +50,14 @@ Guidance for infrastructure, container and deployment security.
 - No root push to registry
 - Vulnerability scanning in pipeline
 
+### SSRF (server fetching a user-supplied URL)
+For link previews, scrapers, PDF capture, webhooks — any server-side fetch of a user URL:
+- **Validate every request actually emitted, not just the input URL.** A public URL that 30x-redirects to `127.0.0.1` / a private IP is the classic bypass; JS navigations (headless browser) are vectors too.
+- Disable transparent redirect following (`follow_redirects=False`) and re-run the host/IP check on **each hop** before connecting; cap the redirect count.
+- For headless browsers (Playwright/Puppeteer), intercept navigation requests and abort those resolving to internal hosts.
+- Block private/loopback/reserved/link-local IPs and non-http(s) schemes after DNS resolution.
+- **Residual risk — DNS rebinding**: validation resolves the name, the HTTP client re-resolves at connect time. Closing it requires pinning the connection to the validated IP (custom transport). Document the limitation if you don't close it.
+
 ## Key principles
 
 1. **Least privilege** — Each component only accesses what it needs
