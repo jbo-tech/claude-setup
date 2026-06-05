@@ -1,3 +1,7 @@
+---
+description: Disable auto-delegation for this project
+---
+
 # Delegate Off
 
 Disable auto-delegation for this project.

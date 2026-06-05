@@ -1,3 +1,8 @@
+---
+description: Hand off a coding task to a cheaper agent CLI; you orchestrate and review
+argument-hint: [--backend <name>] <instruction>
+---
+
 # Delegate
 
 Delegate a coding task to a cheaper agent CLI. You orchestrate and review.

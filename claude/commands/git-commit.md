@@ -1,3 +1,7 @@
+---
+description: Analyze changes and create conventional-commit commits
+---
+
 # Commit
 
 Analyze changes and create well-structured commits with conventional commit messages.

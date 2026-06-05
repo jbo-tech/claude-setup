@@ -1,3 +1,7 @@
+---
+description: Initialize Claude Code project context by analyzing the codebase
+---
+
 # Bootstrap
 
 Initialize Claude Code context for this project. Analyzes the codebase and creates the context structure with relevant content.

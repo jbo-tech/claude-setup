@@ -1,3 +1,7 @@
+---
+description: Enable auto-delegation — all implementation tasks delegated automatically
+---
+
 # Delegate On
 
 Enable auto-delegation for this project. All implementation tasks will be delegated automatically.

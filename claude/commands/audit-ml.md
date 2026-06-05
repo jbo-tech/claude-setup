@@ -1,3 +1,7 @@
+---
+description: Audit ML/DL code for leakage, validation, reproducibility and serving — no fixes
+---
+
 # Audit ML
 
 Specialized audit for machine learning / deep learning / data analysis code. Same stance as `/audit` — constructive criticism, no fixing.

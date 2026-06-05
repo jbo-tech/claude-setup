@@ -1,3 +1,7 @@
+---
+description: End-of-session retrospective — update project context files
+---
+
 # Retro
 
 End-of-session retrospective. Analyze the session and update project context files automatically.

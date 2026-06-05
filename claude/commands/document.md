@@ -1,3 +1,7 @@
+---
+description: Generate orientation docs (architecture + reference) from code as ground truth
+---
+
 # Document
 
 Generate **orientation documentation** — NOT a README, NOT usage docs.

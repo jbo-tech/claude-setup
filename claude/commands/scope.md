@@ -1,3 +1,8 @@
+---
+description: Single entry point: clarify WHAT, WHY and HOW before coding
+argument-hint: <what you want to build>
+---
+
 # Scope
 
 **The single entry point for any work.** Clarify WHAT, WHY, and HOW before coding.

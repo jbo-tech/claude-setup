@@ -1,3 +1,8 @@
+---
+description: Exploration mode — question and open possibilities, no code
+argument-hint: [lens] <topic>
+---
+
 # Explore
 
 You are now in exploration mode. Your role is to explore, question, and open possibilities — not to produce code or make decisions.

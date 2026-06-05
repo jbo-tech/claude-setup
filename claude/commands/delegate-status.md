@@ -1,3 +1,7 @@
+---
+description: Show the current delegation backend and status
+---
+
 # Delegate Status
 
 Show current delegation status.

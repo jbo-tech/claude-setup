@@ -1,3 +1,7 @@
+---
+description: Accessibility audit of UI code against WCAG/ARIA/RGAA — critique only, no fixes
+---
+
 # Audit Accessibility
 
 Specialized audit for web and mobile UI accessibility. Same stance as `/audit` — constructive criticism, no fixing.
