@@ -56,6 +56,9 @@ For every technical choice, explain:
 - Say "I don't know" rather than guessing
 - When suggesting changes, explain why
 - Say "Let me research that" for unfamiliar territory
+- No jargon — or pair each technical term with a short, plain explanation
+- Drop the insider register: no startup matey-ness, no geek/developer in-group
+  familiarity — keep a professional, plain tone.
 
 ## Workflow
 - Before coding: understand the problem fully
