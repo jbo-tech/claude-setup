@@ -103,7 +103,7 @@ claude/
 | `/delegate-status` | Show delegation backend status |
 | `/git-commit` | Git commit |
 | `/retro` | Session retrospective |
-| `/document` | Generate orientation docs (architecture + reference/drift) in `docs/` |
+| `/document` | Generate orientation docs (architecture + reference/drift/debt) in `docs/` |
 
 ### Delegate — task routing
 

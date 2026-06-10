@@ -33,11 +33,13 @@ generated_on: <YYYY-MM-DD>
 ---
 ```
 
-### 2. `docs/reference.md` — the référentiel + drift (what the code does, vs what was intended)
+### 2. `docs/reference.md` — the référentiel + drift + debt (what the code does, vs what was intended)
 
 The reference documents reality (what the code does); drift is the gap between recorded intent
-and that same reality. They describe the same objects, so they live together: a scannable drift
-summary at the top, divergences annotated **in context** below.
+and that same reality; debt is the known compromises *inside* that reality (shortcuts, workarounds,
+duplication, missing tests, TODOs) — independent of any recorded decision. All three describe the
+same objects, so they live together: a scannable summary at the top, divergences and debt annotated
+**in context** below.
 
 Structure:
 
@@ -49,6 +51,9 @@ against the code (reality) and list **only the gaps** — this is the owner's to
 - **Docs that don't earn their place** — existing `docs/` files that are redundant with these
   orientation docs, stale, or orphaned (nothing links to them, nobody maintains them). A removal-
   or-merge candidate, with the reason. This keeps the doc set sharp.
+- **Known debt** — shortcuts, workarounds, duplication, missing tests or TODOs the code carries
+  *today*, independent of any recorded decision (so distinct from drift). For each: where it is,
+  why it's there if known, and the cost of leaving it.
 
 For each: the **file to look at**, the **question to resolve**, and a link to the annotated spot
 below. If `.claude/context/decisions.md` is absent, say so and base drift on code-vs-README/CLAUDE.md.
@@ -59,8 +64,8 @@ below. If `.claude/context/decisions.md` is absent, say so and base drift on cod
 - For each: inputs/outputs, key behavior, important gotchas.
 - Config: the keys that matter and what they control.
 - Skip private helpers and trivia — document what a maintainer needs to *act*, not every line.
-- Where a component diverged from intent, add an inline **`⚠ drift:`** note right there, and make
-  sure it appears in the top summary too.
+- Where a component diverged from intent, add an inline **`⚠ drift:`** note right there; where it
+  carries a known compromise, add a **`⚠ debt:`** note. Make sure both surface in the top summary too.
 
 ## Don't proliferate documents
 
@@ -88,8 +93,9 @@ authoritative. This command **owns exactly two files** and never spawns parallel
    For large projects, use the Explore agent to fan out; read only key files yourself.
 2. Write `architecture.md` (high level, teaching tone, with the diagram).
 3. Write `reference.md`: the per-component public surface, with inline `⚠ drift:` notes where the
-   code diverged from `.claude/context/decisions.md` (intent). Then put a scannable
-   `## Drift — to arbitrate` summary at the top, linking down to each annotated spot. While there,
+   code diverged from `.claude/context/decisions.md` (intent) and `⚠ debt:` notes where it carries a
+   known compromise. Then put a scannable `## Drift — to arbitrate` summary at the top (drift +
+   debt), linking down to each annotated spot. While there,
    inventory the other `docs/` files and give each a relevance verdict (complementary / merge /
    removal-candidate) — surface dead weight, don't accumulate it.
 4. Stamp `architecture.md` front-matter with the current commit (`git rev-parse --short HEAD`) and date.
@@ -126,7 +132,7 @@ across runs of the same project so diffs stay readable.
 ## Documentation generated
 
 - architecture.md: [written / updated] — N components mapped
-- reference.md:    [written / updated] — N entry points; M drift gaps ([X not-applied, Y diverged, Z untraced])
+- reference.md:    [written / updated] — N entry points; M drift gaps ([X not-applied, Y diverged, Z untraced]); D debt items
 
 ### Most important to look at
 [1-3 lines: the drift items or areas the owner should review first]
