@@ -87,6 +87,34 @@ If exit code is non-zero:
 1. Report the failure
 2. Offer to retry with a refined prompt or handle it directly
 
+## Usage tracking
+
+Every run is logged to `~/.local/share/claude-code/delegate-runs.jsonl`, one
+JSON line per delegation. After the backend finishes, `delegate.sh` reads the
+backend's **own** session logs to record real metrics — it does not re-estimate:
+
+- **Vibe CLI**: parsed from `~/.vibe/logs/session/<session>/meta.json`
+  (`session_cost`, prompt/completion tokens, `steps`).
+- **OpenCode**: parsed from `opencode export <session_id>`
+  (`info.cost`, `info.tokens`).
+
+Each log line carries: `input_tokens`, `output_tokens`, `total_tokens`,
+`cost`, `steps`, `session_id`, `session_dir`. Parsing is best-effort — if a
+backend exposes nothing, those fields are `null` and the run is still logged.
+
+The run output prints a one-line `[delegate] Usage: $cost | N tokens` summary.
+
+For the centralized view across all backends, run the dashboard:
+
+```bash
+python3 ~/.claude/scripts/delegate-status.py [--days N]
+```
+
+This is also what `/delegate-status` surfaces. Correlation between a run and a
+backend session is by working directory + timestamp; it is reliable for
+sequential use, but concurrent delegations in the same directory may
+mis-attribute metrics.
+
 ## Auto-mode
 
 When auto-mode is active (`.claude/delegate-auto` file exists in project root), delegate ALL implementation tasks automatically without asking. Still review every diff.

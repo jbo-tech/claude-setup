@@ -113,14 +113,76 @@ echo ""
 echo "[delegate] Exit code: $EXIT_CODE | Duration: ${DURATION}s | Files changed: $FILES_CHANGED"
 echo "$DIFF_STAT"
 
+# Pull real usage metrics (tokens, cost, steps) from the backend's own session
+# logs. Best-effort: the parser prints {} on any failure, so logging never breaks.
+# Resolve symlinks first — this script is usually invoked via ~/.claude/scripts/
+# symlink, so $0's dir is not where the parser sibling actually lives.
+SCRIPT_REAL="$(readlink -f "$0" 2>/dev/null || echo "$0")"
+PARSER="$(cd "$(dirname "$SCRIPT_REAL")" && pwd)/delegate-parse-session.py"
+METRICS_JSON="{}"
+if [ -f "$PARSER" ]; then
+  METRICS_JSON=$(python3 "$PARSER" "$NAME" "$WORKDIR" "$START_TIME" 2>/dev/null || echo "{}")
+fi
+
+# Pass metrics + run facts through the environment (injection-safe — no values
+# are interpolated into the Python source). The script writes one enriched
+# JSONL line and prints a one-line usage summary.
+DELEGATE_METRICS="$METRICS_JSON" \
+DELEGATE_LOG_FILE="$LOG_FILE" \
+DELEGATE_NAME="$NAME" \
+DELEGATE_MODEL="$MODEL" \
+DELEGATE_TASK="$TASK_OVERRIDE" \
+DELEGATE_DURATION="$DURATION" \
+DELEGATE_EXIT="$EXIT_CODE" \
+DELEGATE_FILES="$FILES_CHANGED" \
+DELEGATE_WORKDIR="$WORKDIR" \
 python3 -c "
-import json, datetime
-with open('$LOG_FILE', 'a') as f:
-    f.write(json.dumps({
-        'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
-        'backend': '$NAME', 'model': '$MODEL' or None, 'task': '$TASK_OVERRIDE' or None,
-        'duration_secs': $DURATION, 'exit_code': $EXIT_CODE,
-        'files_changed': $FILES_CHANGED, 'workdir': '$WORKDIR'
-    }) + '\n')
+import json, datetime, os
+
+def _num(env, cast):
+    raw = os.environ.get(env, '')
+    try:
+        return cast(raw)
+    except (TypeError, ValueError):
+        return None
+
+try:
+    metrics = json.loads(os.environ.get('DELEGATE_METRICS', '{}'))
+except Exception:
+    metrics = {}
+
+entry = {
+    'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+    'backend': os.environ.get('DELEGATE_NAME') or None,
+    'model': os.environ.get('DELEGATE_MODEL') or None,
+    'task': os.environ.get('DELEGATE_TASK') or None,
+    'duration_secs': _num('DELEGATE_DURATION', int),
+    'exit_code': _num('DELEGATE_EXIT', int),
+    'files_changed': _num('DELEGATE_FILES', int),
+    'workdir': os.environ.get('DELEGATE_WORKDIR') or None,
+    # Native backend metrics (None when parsing found nothing).
+    'input_tokens': metrics.get('input_tokens'),
+    'output_tokens': metrics.get('output_tokens'),
+    'total_tokens': metrics.get('total_tokens'),
+    'cost': metrics.get('cost'),
+    'steps': metrics.get('steps'),
+    'session_id': metrics.get('session_id'),
+    'session_dir': metrics.get('session_dir'),
+}
+
+with open(os.environ['DELEGATE_LOG_FILE'], 'a') as f:
+    f.write(json.dumps(entry) + '\n')
+
+# Surface the cost in the run output too.
+cost, tok = metrics.get('cost'), metrics.get('total_tokens')
+if cost is not None or tok is not None:
+    parts = []
+    if cost is not None:
+        parts.append(f'\${cost:.4f}')
+    if tok is not None:
+        parts.append(f'{tok} tokens')
+    print('[delegate] Usage: ' + ' | '.join(parts))
+else:
+    print('[delegate] Usage: not available for this backend/run')
 "
 echo "[delegate] Logged to $LOG_FILE"

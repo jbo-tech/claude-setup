@@ -100,7 +100,7 @@ claude/
 | `/delegate [--task <type>]` | Delegate coding task to cheaper agent CLI |
 | `/delegate-on` | Enable auto-delegation for project |
 | `/delegate-off` | Disable auto-delegation |
-| `/delegate-status` | Show delegation backend status |
+| `/delegate-status` | Show delegation backend status + centralized cost/token usage |
 | `/git-commit` | Git commit |
 | `/retro` | Session retrospective |
 | `/document` | Generate orientation docs (architecture + reference/drift/debt) in `docs/` |

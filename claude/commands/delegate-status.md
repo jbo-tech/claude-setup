@@ -39,15 +39,29 @@ Show current delegation status.
 
 2. **Auto-mode**: Check if `.claude/delegate-auto` exists in the project root.
 
-3. **Recent runs**: Show last 5 entries from the log:
+3. **Usage dashboard**: Show the centralized cost/token summary aggregated
+   from the native backend metrics (Vibe CLI + OpenCode):
+   ```bash
+   python3 ~/.claude/scripts/delegate-status.py
+   ```
+   Add `--days N` to scope to a recent window (e.g. `--days 7`).
+
+   The dashboard reports total/today cost, total tokens, error count, and a
+   per-backend·model breakdown. Runs whose backend did not expose metrics
+   (legacy runs, or a backend that wrote no session log) are counted as
+   "untracked" — they still appear in run counts but contribute $0.
+
+4. **Recent runs** (optional, for the last few raw entries):
    ```bash
    tail -5 ~/.local/share/claude-code/delegate-runs.jsonl 2>/dev/null | python3 -c "
    import sys, json
    for line in sys.stdin:
        e = json.loads(line)
        status = '✓' if e['exit_code'] == 0 else '✗'
-       print(f\"  {status} {e['timestamp'][:16]} | {e['backend']} | {e['duration_secs']}s | {e['files_changed']} files\")
+       cost = e.get('cost')
+       cost_str = f\"\${cost:.4f}\" if cost is not None else '—'
+       print(f\"  {status} {e['timestamp'][:16]} | {e['backend']} | {e['duration_secs']}s | {e['files_changed']} files | {cost_str}\")
    " 2>/dev/null || echo "  (no runs yet)"
    ```
 
-4. Present the information clearly to the user.
+5. Present the information clearly to the user.
