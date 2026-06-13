@@ -17,6 +17,19 @@ All LLM provider API keys live in a single shared file:
 
 Projects load this file first, then override with a local `.env` for project-specific config (auth tokens, paths, ports — never provider keys).
 
+### Naming
+
+Use the name expected by each provider's official SDK — the key auto-detected when no explicit config is passed:
+
+| Provider   | Variable             |
+|------------|----------------------|
+| OpenAI     | `OPENAI_API_KEY`     |
+| Anthropic  | `ANTHROPIC_API_KEY`  |
+| Mistral    | `MISTRAL_API_KEY`    |
+| Google     | `GOOGLE_API_KEY`     |
+
+For providers without a standard SDK name, follow the pattern `<PROVIDER>_API_KEY` (uppercase, underscores).
+
 ### Loading order
 
 ```
