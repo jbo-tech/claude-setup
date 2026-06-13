@@ -1,6 +1,6 @@
 ---
-generated_from_commit: dcbded0
-generated_on: 2026-06-04
+generated_from_commit: d0e4ff7
+generated_on: 2026-06-13
 ---
 
 # Architecture — claude-setup
@@ -29,8 +29,9 @@ To understand the system, read in this order:
    `delegate.md`, `retro.md`, `document.md` — they carry most of the design.
 4. **`claude/skills/`** + **`claude/agents/`** — auto-routed expertise (loaded on relevance, not
    always). Lower priority for a first pass.
-5. **`claude/config/delegate.yaml`** + **`claude/scripts/delegate.sh`** — the one subsystem with
-   real runtime logic (backend routing). Worth reading together.
+5. **`claude/config/delegate.yaml`** + **`claude/scripts/delegate.sh`** + the `delegate-*.py`
+   helpers — the one subsystem with real runtime logic (backend routing **and** usage tracking).
+   Worth reading together.
 
 ## The two surfaces (a key mental model)
 
@@ -53,7 +54,7 @@ Not everything costs the same in context. This distinction governs most design d
 | `claude/commands/*.md` | Slash commands — explicit, user-invoked workflows (audit, delegate, retro, document, scope, …). |
 | `claude/skills/*/` | Auto-routed domain expertise (data-engineering, security-review, infra-containers, agent-builder, creative-direction, delegate). |
 | `claude/agents/*.md` | Horizontal-scope personas (creative-director, infra-expert). |
-| `claude/scripts/` | Runtime helpers: `delegate.sh` (backend router), `statusline.py` (default status line), `context-bar.sh` (legacy status line). |
+| `claude/scripts/` | Runtime helpers: `delegate.sh` (backend router + run logger), `delegate-parse-session.py` (reads a backend's native session log for cost/tokens), `delegate-status.py` (centralized usage dashboard), `statusline.py` (default status line), `context-bar.sh` (legacy status line). |
 | `claude/config/delegate.yaml` | The one user-editable config — delegation backends + task→model routing. Copied, never symlinked. |
 | `.claude/context/*` | **This repo's own** session memory (status, decisions, anti-patterns). Git-ignored — local scratch, project source of truth for retros. |
 | `docs/` | Maintainer-facing docs (specs + these orientation docs). Tracked, unlike `.claude/`. |
@@ -77,6 +78,12 @@ Not everything costs the same in context. This distinction governs most design d
                          /command invoked ────┘
                               │
               /delegate ──▶ delegate.sh ──reads──▶ delegate.yaml ──picks backend──▶ vibe | opencode(-go)
+                              │                                                          │ writes native logs
+                              │ after run                                                ▼
+                              └─▶ delegate-parse-session.py ──reads──▶ ~/.vibe/logs | opencode export
+                                        │ cost / tokens / session_id
+                                        ▼
+                              delegate-runs.jsonl ◀──aggregates── delegate-status.py ──▶ /delegate-status
 ```
 
 ## Boundaries & extension points
@@ -90,5 +97,12 @@ Not everything costs the same in context. This distinction governs most design d
 - **Don't** put durable artifacts in `.claude/` — it's git-ignored scratch. Tracked docs go in `docs/`.
 - **Config vs symlink rule**: things the *user edits at runtime* are copied (`delegate.yaml`);
   things the *repo owns* are symlinked. Respect this when adding new config.
+- **Usage tracking is parse-only**: cost/tokens come from each backend's *own* session logs
+  (Vibe `meta.json`, OpenCode `export`) — no pricing table is maintained here. To support a new
+  backend's metrics, add a `parse_<backend>` branch in `delegate-parse-session.py`; if it can't be
+  parsed, the run is still logged with `null` metrics. Monitoring is **passive** — no hard limits.
+- **A new sibling script needs its own symlink.** `install.sh` links each *file* in `scripts/`
+  individually, and `delegate.sh` resolves siblings via `readlink -f "$0"`. Adding a script to the
+  repo isn't enough for the current session until it's symlinked (re-run `install.sh`).
 
 See [`reference.md`](reference.md) for the per-component detail and current intent-vs-reality drift.
