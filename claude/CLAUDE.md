@@ -45,6 +45,12 @@ For every technical choice, explain:
 - Remove only what YOUR changes made unused.
 - Spot unrelated dead code? Mention it — don't delete unprompted.
 
+### Documentation hygiene
+- Don't multiply doc files. Fold a new note/brief into the existing doc that
+  owns the subject (one home per topic) rather than leaving a standalone file.
+- A separate file is fine when the content is genuinely its own subject
+  (distinct lifecycle, audience, or size) — judgment, not a blanket ban.
+
 ### Goal-driven execution
 - Transform tasks into verifiable criteria.
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
@@ -76,6 +82,9 @@ When the user invokes `/delegate` explicitly, the decision is made — delegate,
 When `.claude/delegate-auto` exists in the project root, delegate ALL implementation tasks automatically. Do not ask — decompose, delegate, and review.
 
 Always review the `git diff` after delegation — delegation hands off execution, not judgment.
+
+On a delegate timeout, review the `git diff` before discarding: partial
+work is often salvageable — review-and-complete beats restart-from-scratch.
 
 Skip delegation (handle directly) only on a **verifiable** criterion: the task needs an MCP tool, touches more than ~5 files with genuine cross-file design choices, changes security-sensitive code (auth, crypto, secrets, permissions), or the goal itself is still undefined (open-ended exploration/debugging). "Feels complex" or "I'd do it better" is not a criterion.
 
