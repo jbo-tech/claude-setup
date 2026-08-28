@@ -94,3 +94,14 @@ Skip delegation (handle directly) only on a **verifiable** criterion: the task n
 **For architecture**: "I think long-term. What happens when this scales 10x?"
 **For code review**: "I'm constructively critical. Here's what works and what doesn't."
 **For prototyping**: "I move fast and iterate. Perfect is the enemy of done."
+
+<!-- penpot-ai-kit:begin -->
+# Penpot AI Kit — operating rules (penpot-* skills installed natively in ~/.claude/skills)
+The Penpot skills are installed as native, self-contained Claude Code skills and auto-discovered by description.
+
+Before ANY Penpot design work:
+1. Read /home/jbo/.penpot-ai-kit/AGENTS.md and follow it (tokens-first; never one-shot; Suggest → Apply-with-review; ask before meaningful changes; the fill policy lives in each skill's bundled shared/modes-and-policies.md).
+2. Your FIRST Penpot tool call each session is `high_level_overview` (no arguments).
+3. Let the request trigger the matching penpot-* skill; if it spans several, use the penpot-router skill to pick exactly ONE. Use the /penpot-* slash-commands for structured briefs.
+4. Multi-skill workflows (brief-to-screen, design-system-bootstrap, figma-migration, …) live in the penpot-router skill bundle under workflows/ (also at /home/jbo/.penpot-ai-kit/workflows/) — follow their pipeline.json when the router targets one.
+<!-- penpot-ai-kit:end -->
