@@ -168,7 +168,17 @@ Specialized audits (`/audit`, `/audit-ml`, `/audit-accessibility`) are called on
 | `creative-direction` | Naming, branding, creative direction workflow |
 | `data-engineering` | Open-source data pipelines (DuckDB, Parquet, Kestra, MinIO) |
 | `infra-containers` | Open-source containerization (Docker, Podman, K3s, Kestra) |
+| `safe-penpot-writes` | Read-back discipline for the Penpot plugin API — the writes that fail silently ⚠ |
 | `security-review` | Security best practices for code and infrastructure |
+
+⚠ **External dependency.** `safe-penpot-writes` complements the [Penpot AI kit](https://github.com/penpot/penpot-ai-kit)
+rather than duplicating it: the kit's `penpot-*` skills know *what* to build, this one knows *how a
+write goes wrong*. It expects the kit installed (`~/.claude/skills/penpot-router`) and the Penpot MCP
+reachable — `install.sh` warns if the kit is missing. Without it the skill still reads as
+documentation, but its scripts cannot run: `penpotUtils` comes from the MCP plugin context.
+
+Its name deliberately does **not** start with `penpot-`: the kit's installer offers a `--prune` flag
+that removes any `penpot-*` skill it does not ship, and would take ours with it.
 
 ## Composition with the public ecosystem
 
@@ -185,9 +195,11 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 | Airflow / dbt / Snowflake | — | `astronomer-data:*` |
 | Vercel / Next.js | — | `vercel-*` |
 | Frontend design / UI generation | — | `frontend-design`, `taste-design`, `stitch-*` |
+| Designing in Penpot | `safe-penpot-writes` (the write path only) | `penpot-ai-kit` (`penpot-*`, 12 skills) |
 | Delegate to cheaper models | `/delegate` + `/delegate-on` | `vibe-skill` (Mistral Vibe) |
 
-What this setup **adds** : the `/scope → /goal` handoff with structured success criteria, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, and the `creative-director` agent. Everything else is delegated.
+What this setup **adds** : the `/scope → /goal` handoff with structured success criteria, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, the `creative-director` agent, and `safe-penpot-writes` — the one Penpot concern the official kit
+does not cover. Everything else is delegated.
 
 ### Recommended companions
 

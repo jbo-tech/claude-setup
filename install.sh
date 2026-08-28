@@ -336,6 +336,31 @@ check_ruff() {
   fi
 }
 
+# --- Vérification des dépendances externes des skills ---
+# Certaines skills complètent un kit tiers plutôt que de le dupliquer. Elles
+# restent lisibles sans lui, mais leurs recettes ne s'exécutent pas : l'API
+# `penpotUtils` vient du contexte du plugin MCP, pas de nous.
+# Table : <skill> <chemin attendu> <libellé> <url>
+SKILL_DEPS=(
+  "safe-penpot-writes|$HOME/.claude/skills/penpot-router|Penpot AI kit|https://github.com/penpot/penpot-ai-kit"
+)
+
+check_skill_deps() {
+  local entry skill path label url
+  for entry in "${SKILL_DEPS[@]}"; do
+    IFS='|' read -r skill path label url <<< "$entry"
+    # La skill n'est pas dans ce dépôt ? rien à vérifier.
+    [ -d "$SOURCE/skills/$skill" ] || continue
+    if [ ! -e "$path" ]; then
+      log ""
+      log "Warning : skill '$skill' expects the $label, which is not installed."
+      log "  expected : $path"
+      log "  install  : $url"
+      log "  The skill still reads as documentation, but its scripts need the Penpot MCP."
+    fi
+  done
+}
+
 # --- Point d'entrée ---
 main() {
   log "Installing claude-setup"
@@ -363,6 +388,7 @@ main() {
 
   install_config_files
   check_ruff
+  check_skill_deps
 
   log ""
   log "Summary :"
