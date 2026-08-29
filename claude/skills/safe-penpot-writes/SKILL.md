@@ -1,6 +1,6 @@
 ---
 name: safe-penpot-writes
-description: Read-back discipline for the Penpot plugin API, whose write path fails SILENTLY. Activates when the user mentions "apply tokens", "rename a token", "change a token value", "edit a component", "update all instances", "work across pages" — and above all when they say "why didn't my change apply", "the token is right but nothing moved", or "the component and its copies disagree". Complements the official Penpot AI kit (penpot-* skills); does not replace any of them.
+description: Read-back discipline for the Penpot plugin API, whose write path fails SILENTLY. Activates when the user mentions "apply tokens", "rename a token", "change a token value", "edit a component", "update all instances", "work across pages" — and above all when they say "why didn't my change apply", "the token is right but nothing moved", or "the component and its copies disagree" — and when they say "my work disappeared" or "the file went back in time". Complements the official Penpot AI kit (penpot-* skills); does not replace any of them.
 ---
 
 # Safe Penpot writes
@@ -23,6 +23,7 @@ but nothing moves".
 - Any work that spans more than one page
 - Debugging "I changed it and nothing happened"
 - After any `clone()` — clones inherit their source's bindings
+- Opening a campaign of any length: prove the session reaches the server before building on it
 
 ## Dependency — the official Penpot AI kit
 
@@ -44,14 +45,14 @@ bindings and rendered values on a **closed** page, identical to the same read wi
 same sampled rendered value.* The active-page restriction bears on the **write** path only — which
 is what makes the discipline practical: you verify page B while A is active.
 
-**These six observations live here on purpose, and are not upstreamed** (decision, 2026-08-27). They
+**These seven observations live here on purpose, and are not upstreamed** (decision, 2026-08-27). They
 were measured on one real file over one campaign; the kit's own `plugin-api-gotchas.md` is
 version-pinned and probe-verified, and dropping unprobed findings into it would weaken that contract.
 Keep them here, keep them dated, and re-measure before trusting them against a newer Penpot build.
 
 `install.sh` warns when the kit is missing.
 
-## The six silent failure modes
+## The seven silent failure modes
 
 Each measured on a real file, not inferred from the docs.
 
@@ -129,6 +130,41 @@ Standing policy from the kit (kit #12): the probe that would verify it is itself
 by cloning a main instance and creating a component from the clone — Penpot attaches it to the
 container on its own.
 
+### 7. A whole session can be unpersisted — and every read-back still passes
+Reads and writes both hit the **client** state. When the client never commits to the server, the
+verification confirms work that does not exist anywhere but that tab. Counts match, sampled rendered
+values match, `export_shape` looks right — and the file on the server is untouched.
+
+*Measured 2026-08-28/29, Penpot 2.17.2: a campaign's ≈820 shapes and ≈4400 bindings read back
+correctly through the plugin while the server had none of it — server revision advanced by 5 across
+three days, with **no autosave snapshot at all** on the two working days. The work was not recoverable
+from version history: it had never arrived.*
+
+**→ The proof is server-side, and there are two of them.**
+
+```js
+// in the call that writes
+const before = penpot.currentFile.revn;
+// …the write…
+
+// in the NEXT call — revn does NOT increment inside the writing call
+return { revn: penpot.currentFile.revn };          // must be > before
+```
+
+*Measured: a plugin-data write left `revn` unchanged when read in the same call, and `+1` in the next
+one, with a matching server-side `internal/snapshot/<revn>` timestamped to the minute of the write.*
+
+Second proof, stronger and independent: `await penpot.currentFile.findVersions()` is a server round
+trip. A **new `internal/snapshot/<revn>` entry** is direct evidence the server received the work.
+
+**→ Two standing rules.**
+
+- **One tab per file during a campaign.** The plugin lives in a tab; a second tab is a second client
+  with its own state, and on reconnection it can win. This is how a live file reverts three days.
+- **Pin a named version at every stage boundary** — `penpot.currentFile.saveVersion(label)`, or the
+  Versions panel. Autosaves expire; named versions do not. A stage you cannot pin is a stage you
+  cannot lose safely.
+
 ## What counts as proof
 
 | Write | Proof | Not proof |
@@ -139,6 +175,7 @@ container on its own.
 | Rename a shape | `penpot.library.local.components` unchanged — unless you meant it | the shape's name reads back fine |
 | Structural edit | the **copies** carry the new child | the main component carries it |
 | Cross-page work | the count **on that page** | a total, which hides a zero |
+| Anything at all | `revn` moved, read in a **later** call | any read of the state you just wrote (#7) |
 
 **If the counts disagree, stop and report the delta. Do not re-run the write** — if the first
 application landed, the second unbinds it (#2), turning a partial success into a clean failure.
@@ -172,12 +209,13 @@ the layout had given it. `scripts/rebuildCopy.js`.
 
 | Excuse | Why it's wrong | What to do instead |
 |---|---|---|
-| "It returned without error, it worked." | Five of six traps return cleanly. | Read back in a **separate** call. |
+| "It returned without error, it worked." | Six of seven traps return cleanly. | Read back in a **separate** call. |
 | "I'll loop over the pages." | The loop lands only on the last (#1). | One tool call per page. |
 | "I'll re-apply the token to refresh it." | Re-applying **unbinds** (#2). | Read `shape.tokens` first, or apply twice on purpose. |
 | "The token resolves to the new value." | That's the token's value, not the shape's (#3). | Sample a consumer's rendered property. |
 | "I'll add the wrapper inside the copy." | Copies refuse structure (#5). | Change the main, rebuild the copies. |
 | "Nothing looks different, so nothing broke." | A frozen value looks like a live one. | The count is the evidence, not the render. |
+| "I verified it, the counts were right." | Counts read the client, which may never have committed (#7). | Check `revn` moved, in a later call. |
 
 ## Scripts
 
@@ -186,6 +224,7 @@ the layout had given it. `scripts/rebuildCopy.js`.
 | `scripts/inventoryConsumers.js` | Counts a token's consumers per page — the baseline to take **before** |
 | `scripts/verifyBindings.js` | The read-back: counts, old-name leftovers, sampled rendered value |
 | `scripts/rebuildCopy.js` | Rebuilds a copy from the right variant, restores its overrides, replays its interactions |
+| `scripts/verifyPersistence.js` | The pre-flight: proves writes reach the **server**, not just the tab — run it before a campaign and at its end |
 
 Each is a body for `execute_code`: paste, replace the `REPLACE-ME` placeholders, run. Verify any
 unfamiliar signature with `penpot_api_info` first.
