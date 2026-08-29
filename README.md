@@ -159,10 +159,10 @@ Specialized audits (`/audit`, `/audit-ml`, `/audit-accessibility`) are called on
 |-------|----------|
 | `infra-expert` | container, dockerfile, compose, deploy, kubernetes, systemd |
 | `creative-director` | brainstorm, naming, concept, creative, branding, vision |
-| `orchestrateur` | session pilot — delegates all implementation, never writes code |
+| `orchestrator` | session pilot — delegates all implementation, never writes code |
 
-`orchestrateur` is meant for the pilot seat, not for delegation: start a session with
-`claude --agent orchestrateur`. It has no `Write`/`Edit`, which turns the delegation policy in
+`orchestrator` is meant for the pilot seat, not for delegation: start a session with
+`claude --agent orchestrator`. It has no `Write`/`Edit`, which turns the delegation policy in
 `CLAUDE.md` from a written rule into the shape of the agent. Its `Agent(...)` allowlist only
 applies when it runs as the main thread — spawned as an ordinary subagent, the list is ignored.
 
