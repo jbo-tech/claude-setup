@@ -6,7 +6,7 @@ Copy this template and customize to create a technical expert agent.
 ---
 name: [lowercase-name]
 description: [Short description. Keywords for automatic activation.]
-tools: [Read, Grep, Glob, Bash(allowed:commands*)]
+tools: [Read, Grep, Glob, Bash(allowed-command:*)]
 ---
 
 # [Expert Name]
@@ -84,6 +84,6 @@ Optional improvements.
 | Domain | Recommended tools |
 |--------|-------------------|
 | Review only | `Read, Grep, Glob` |
-| Frontend | `Read, Grep, Glob, Bash(npm:*, eslint:*, tsc:*)` |
-| Python | `Read, Grep, Glob, Bash(python:*, pytest:*, ruff:*)` |
+| Frontend | `Read, Grep, Glob, Bash(npm:*), Bash(eslint:*), Bash(tsc:*)` |
+| Python | `Read, Grep, Glob, Bash(python:*), Bash(pytest:*), Bash(ruff:*)` |
 | Full access | `Read, Write, Edit, Bash` |

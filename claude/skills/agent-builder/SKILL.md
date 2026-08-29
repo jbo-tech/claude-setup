@@ -58,6 +58,25 @@ Use the appropriate template and customize:
 - **User-level** (`~/.claude/agents/`): if reusable across projects
 - **Project-level** (`.claude/agents/`): if specific to this project
 
+### 5. Verify the tool restriction actually applies
+
+An agent's tool allowlist is `tools:` (denylist: `disallowedTools:`). **Not `allowed-tools:`** —
+that is the field for *skills and slash commands*. An unrecognized frontmatter key is ignored
+without any warning, so the agent silently inherits every tool while its prompt keeps claiming it
+is restricted. That is worse than no restriction: it reads as a guarantee and isn't one.
+
+Two agents in this repo shipped that way for months (`infra-expert` announced "read-only mode"
+while holding `Write` and `Edit`), which is why this step exists.
+
+**Check, don't assume.** The agent listing injected at the start of a session prints each agent's
+effective tools. An agent meant to be restricted must not read `(Tools: All tools)`. Also note:
+
+- One tool per parenthesis — `Bash(docker:*), Bash(podman:*)`, not `Bash(docker:*, podman:*)`.
+- `tools:` **replaces** the inherited pool. Anything absent is gone, including `WebSearch`,
+  `WebFetch` and `Skill`. List what the agent needs, not only what you want to forbid.
+- `Agent(a, b)` restricts which subagents can be spawned, but only when the agent runs as the main
+  thread (`claude --agent <name>`). Inside a subagent definition the parenthesised list is ignored.
+
 ## Available templates
 
 See `templates/` folder:
