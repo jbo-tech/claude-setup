@@ -155,16 +155,27 @@ Specialized audits (`/audit`, `/audit-ml`, `/audit-accessibility`) are called on
 
 ## Agents
 
-| Agent | Triggers |
-|-------|----------|
-| `infra-expert` | container, dockerfile, compose, deploy, kubernetes, systemd |
-| `creative-director` | brainstorm, naming, concept, creative, branding, vision |
-| `orchestrator` | session pilot — delegates all implementation, never writes code |
+Agents are grouped by domain: `data-*` and `infra-*` review, `creative-director` is a role,
+and `orchestrator`/`builder` run the work itself.
+
+| Agent | Family | Triggers |
+|-------|--------|----------|
+| `data-ml-expert` | domain review | pipeline, model, data leakage, cross-validation, pytorch, tensorflow |
+| `data-rag-expert` | domain review | hybrid search, reranking, MMR, golden set, recall@k / MRR / nDCG, Opik, eval in CI |
+| `infra-expert` | domain review | container, dockerfile, compose, deploy, kubernetes, systemd |
+| `creative-director` | role | brainstorm, naming, concept, creative, branding, vision |
+| `orchestrator` | workflow | session pilot — delegates all implementation, never writes code |
+| `builder` | workflow | implementation worker — one bounded task, isolated git worktree, reports what it verified |
 
 `orchestrator` is meant for the pilot seat, not for delegation: start a session with
 `claude --agent orchestrator`. It has no `Write`/`Edit`, which turns the delegation policy in
 `CLAUDE.md` from a written rule into the shape of the agent. Its `Agent(...)` allowlist only
 applies when it runs as the main thread — spawned as an ordinary subagent, the list is ignored.
+
+Every agent declares `tools:` — the field a subagent definition actually reads. `allowed-tools:`
+is the field for skills and slash commands; used on an agent it is ignored silently, and the agent
+keeps every tool while its prompt claims otherwise. Check against the agent listing printed at the
+start of a session: a restricted agent must not read `(Tools: All tools)`.
 
 ## Skills
 
