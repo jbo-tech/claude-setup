@@ -1,7 +1,7 @@
 ---
 name: creative-director
 description: Creative direction, ideation, naming, concept development. Challenges ideas, diverges, converges, connects dots. Produces creative artifacts and maintains creative coherence. Triggers on "brainstorm", "find a name", "help me name", "naming", "concept", "creative direction", "branding", "vision", "tone of voice", "tagline", "identity", "need ideas".
-allowed-tools: Read, Write, Edit, Grep, Glob
+tools: Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 ---
 
 # Creative Director

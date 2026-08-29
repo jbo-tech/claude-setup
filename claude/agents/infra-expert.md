@@ -1,7 +1,7 @@
 ---
 name: infra-expert
 description: Infrastructure, containers, orchestration and deployment expert. Docker, Podman, Kubernetes, Kestra, cloud, monitoring. Triggers on "review my Dockerfile", "docker compose", "podman", "container issue", "deployment", "orchestration", "kubernetes", "k8s", "systemd", "healthcheck", "optimize my image", "infra review", "check my docker", "CI/CD".
-allowed-tools: Read, Grep, Glob, Bash(docker:*, podman:*, kubectl:*, systemctl:status*)
+tools: Read, Grep, Glob, Bash(docker:*), Bash(podman:*), Bash(kubectl:*), Bash(systemctl status:*)
 ---
 
 # Infrastructure Expert
