@@ -1,6 +1,6 @@
 ---
 name: safe-penpot-writes
-description: Read-back discipline for the Penpot plugin API, whose write path fails SILENTLY. Activates when the user mentions "apply tokens", "rename a token", "change a token value", "edit a component", "update all instances", "work across pages" — and above all when they say "why didn't my change apply", "the token is right but nothing moved", or "the component and its copies disagree" — and when they say "my work disappeared" or "the file went back in time". Complements the official Penpot AI kit (penpot-* skills); does not replace any of them.
+description: Read-back discipline for the Penpot plugin API, whose write path fails SILENTLY. Activates when the user mentions "apply tokens", "rename a token", "change a token value", "edit a component", "update all instances", "work across pages" — and above all when they say "why didn't my change apply", "the token is right but nothing moved", or "the component and its copies disagree" — and when they say "my work disappeared", "the file went back in time", or "I deleted it and it is still there". Complements the official Penpot AI kit (penpot-* skills); does not replace any of them.
 ---
 
 # Safe Penpot writes
@@ -23,6 +23,7 @@ but nothing moves".
 - Any work that spans more than one page
 - Debugging "I changed it and nothing happened"
 - After any `clone()` — clones inherit their source's bindings
+- Deleting anything that lives inside a component (main or copy)
 - Opening a campaign of any length: prove the session reaches the server before building on it
 
 ## Dependency — the official Penpot AI kit
@@ -53,21 +54,22 @@ bindings and rendered values on a **closed** page, identical to the same read wi
 same sampled rendered value.* The active-page restriction bears on the **write** path only — which
 is what makes the discipline practical: you verify page B while A is active.
 
-**These seven observations live here on purpose, and are not upstreamed** (decision, 2026-08-27). They
+**These eight observations live here on purpose, and are not upstreamed** (decision, 2026-08-27). They
 were measured on one real file over one campaign; the kit's own `plugin-api-gotchas.md` is
 version-pinned and probe-verified, and dropping unprobed findings into it would weaken that contract.
 Keep them here, keep them dated, and re-measure before trusting them against a newer Penpot build.
 
 `install.sh` warns when the kit is missing.
 
-## The seven silent failure modes
+## The eight silent failure modes
 
 Each measured on a real file, not inferred from the docs.
 
 ### 1. Writes only reach the ACTIVE page
 `applyToShapes`, property setters and `createBoard` act on the currently open page. Aimed elsewhere
 they do nothing. Only `shape.remove()` fails loudly (`Cannot modify a page that is not currently
-active`) — treat that error as the reminder that the quiet ones failed too.
+active`) — treat that error as the reminder that the quiet ones failed too. Note that `remove()`
+is loud about the *page*, and quiet about the *component* (#8).
 
 A loop does not fix it: `await penpot.openPage(p)` inside a loop lands only on the **last** page,
 because the mutation resolves after the page has changed again. *Measured: 0, 0, then 7.*
@@ -173,6 +175,41 @@ trip. A **new `internal/snapshot/<revn>` entry** is direct evidence the server r
   Versions panel. Autosaves expire; named versions do not. A stage you cannot pin is a stage you
   cannot lose safely.
 
+### 8. `remove()` on a component descendant HIDES instead of deleting
+*Reported 2026-08-29, not yet measured here — treat it as a live hypothesis and probe it before
+relying on the outcome. Everything else in this list was measured; this one is flagged so the
+distinction stays visible.*
+
+Calling `remove()` on a shape **inside** a component — main or copy — is reported to leave the shape
+in the tree with its visibility turned off, rather than removing it. Nothing throws. The canvas looks
+right, because an invisible shape and an absent one render identically. Every count that walks the
+tree still finds it, and the layout keeps reserving its slot.
+
+This is #5 wearing a different mask: a copy refuses structural change, and `insertChild` says so out
+loud. Deletion appears to fail the other way — quietly, by degrading into a visibility toggle.
+
+**→ Prove the deletion from the PARENT, not from the shape.**
+
+```js
+// before, in its own call
+const parent = target.parent;
+const before = parent.children.length;
+const id = target.id;
+
+// …remove()… then, in the NEXT call:
+const stillThere = penpotUtils.findShapeById(id);
+return { childrenBefore: before, childrenAfter: parent.children.length,
+         stillInTree: !!stillThere,
+         hidden: stillThere ? stillThere.visible === false : null };
+```
+
+`stillInTree: true` with `hidden: true` is the failure: you asked for a deletion and got a
+visibility change. `childrenAfter` unchanged says the same thing without needing the id.
+
+**If it is confirmed:** a shape inside a component cannot be deleted in place — the structural
+change belongs in the main component, and the copies are rebuilt (see below). Same conclusion as #5,
+reached from the opposite direction.
+
 ## What counts as proof
 
 | Write | Proof | Not proof |
@@ -183,6 +220,7 @@ trip. A **new `internal/snapshot/<revn>` entry** is direct evidence the server r
 | Rename a shape | `penpot.library.local.components` unchanged — unless you meant it | the shape's name reads back fine |
 | Structural edit | the **copies** carry the new child | the main component carries it |
 | Cross-page work | the count **on that page** | a total, which hides a zero |
+| Delete a shape | the **parent's** child count dropped | the shape not being visible any more (#8) |
 | Anything at all | `revn` moved, read in a **later** call | any read of the state you just wrote (#7) |
 
 **If the counts disagree, stop and report the delta. Do not re-run the write** — if the first
@@ -217,12 +255,13 @@ the layout had given it. `scripts/rebuildCopy.js`.
 
 | Excuse | Why it's wrong | What to do instead |
 |---|---|---|
-| "It returned without error, it worked." | Six of seven traps return cleanly. | Read back in a **separate** call. |
+| "It returned without error, it worked." | Seven of eight traps return cleanly. | Read back in a **separate** call. |
 | "I'll loop over the pages." | The loop lands only on the last (#1). | One tool call per page. |
 | "I'll re-apply the token to refresh it." | Re-applying **unbinds** (#2). | Read `shape.tokens` first, or apply twice on purpose. |
 | "The token resolves to the new value." | That's the token's value, not the shape's (#3). | Sample a consumer's rendered property. |
 | "I'll add the wrapper inside the copy." | Copies refuse structure (#5). | Change the main, rebuild the copies. |
 | "Nothing looks different, so nothing broke." | A frozen value looks like a live one. | The count is the evidence, not the render. |
+| "I removed it, it's gone from the canvas." | Inside a component, `remove()` may only hide (#8). | Count the parent's children, in a later call. |
 | "I verified it, the counts were right." | Counts read the client, which may never have committed (#7). | Check `revn` moved, in a later call. |
 
 ## Scripts
@@ -233,6 +272,7 @@ the layout had given it. `scripts/rebuildCopy.js`.
 | `scripts/verifyBindings.js` | The read-back: counts, old-name leftovers, sampled rendered value |
 | `scripts/rebuildCopy.js` | Rebuilds a copy from the right variant, restores its overrides, replays its interactions |
 | `scripts/verifyPersistence.js` | The pre-flight: proves writes reach the **server**, not just the tab — run it before a campaign and at its end |
+| `scripts/verifyRemoval.js` | Proves a deletion inside a component actually removed the shape rather than hiding it (#8) |
 
 Each is a body for `execute_code`: paste, replace the `REPLACE-ME` placeholders, run. Verify any
 unfamiliar signature with `penpot_api_info` first.
