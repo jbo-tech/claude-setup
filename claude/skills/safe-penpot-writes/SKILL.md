@@ -36,8 +36,16 @@ MCP reachable:
 - **Routing**: let `penpot-router` pick the domain skill; use this one alongside it, for the write path
 
 If the kit is absent, the recipes below still hold — but `penpotUtils` comes from the MCP plugin
-context, so nothing here runs without it. The scripts use exactly four of its functions:
-`getPages`, `getPageById`, `findShapes`, `findShape`.
+context, so nothing here runs without it. The scripts use five of its functions: `getPages`,
+`getPageById`, `findShapes`, `findShape`, `findShapeById`.
+
+`verifyPersistence.js` additionally relies on **`storage`**, an object assumed to survive from one
+`execute_code` call to the next. That assumption is **not measured**. If it does not hold, part B
+reads an empty baseline, and the naive comparison `revn > undefined` is false — reporting a
+perfectly healthy session as unpersisted. The script now detects the empty baseline, returns
+`baselineLost: true` and counts stray probes, rather than answering the question wrongly. Confirm
+the behaviour with `penpot_api_info` before trusting a campaign to it; until then, run part A and
+part B back to back.
 
 **Reads are independent of the active page.** `getPageById` + `findShapes` return shapes, token
 bindings and rendered values on a **closed** page, identical to the same read with that page open.
