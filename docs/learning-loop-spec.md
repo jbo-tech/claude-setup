@@ -4,7 +4,11 @@
 > `session → observation → promotion par portée+confiance → application`,
 > avec purge symétrique pour éviter la dérive du contexte.
 >
-> Statut : **spécification** (pas encore implémentée). Curseur retenu : **conservateur**.
+> Statut : **implémenté** depuis le 2026-06-04. Le contrat opérationnel vit dans
+> `claude/commands/retro.md` §7 — c'est lui qui fait foi. Ce document conserve ce que le
+> contrat ne porte pas : le raisonnement derrière les trois axes, la matrice de routage
+> détaillée, les risques à valider empiriquement et le hors-scope.
+> Curseur retenu : **conservateur**.
 
 ## 1. Objectif
 
