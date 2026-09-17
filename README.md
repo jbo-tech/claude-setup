@@ -94,6 +94,7 @@ claude/
 | `/bootstrap` | Initialize project context |
 | `/scope` | Entry point (what / why / how) — hands off to `/goal` |
 | `/explore [tag]` | Exploration (tags: `technical`, `architecture`, `business`, `user`) |
+| `/decompose` | Break a scope into vertical slices — thin foundation first, then parallel slices |
 | `/audit` | General code audit (security, optimization, homogeneity) |
 | `/audit-ml` | Specialized ML / DL audit (leakage, validation, serving) |
 | `/audit-accessibility` | Specialized accessibility audit (WCAG / ARIA / RGAA) |

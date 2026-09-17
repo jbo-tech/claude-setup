@@ -93,18 +93,42 @@ heavy analysis. If proposals get noisy, raise thresholds rather than add machine
 `MEMORY.md`, kept OUT of the index so it costs no context):
 ```json
 {"fingerprint":"stable-kebab-slug","summary":"one line","scope_guess":"cross-project|project|tech",
- "count":2,"first_seen":"YYYY-MM-DD","last_seen":"YYYY-MM-DD","explicit":false,"high_cost":false}
+ "count":2,"first_seen":"YYYY-MM-DD","last_seen":"YYYY-MM-DD","explicit":false,"high_cost":false,
+ "source":"defect|session"}
 ```
 
 **Steps:**
-1. Extract this session's learnings (explicit directives, recurring patterns, errors, decisions).
-2. Update the ledger: for each, find a *semantically equivalent* candidate (not exact wording)
+1. **Read the defects — mechanical, before anything subjective.** Run:
+   `python3 ~/.claude/scripts/extract-defects.py --days 7`
+   It reads this project's session transcripts and reports two things: subagent spawns that failed,
+   and tasks that had to be spawned more than once. Treat each line it prints as a **defect** —
+   something the factory produced that had to be redone. For each, name the root cause and the rule
+   that would have prevented it; that pair is the candidate. It arrives dated and counted, instead
+   of remembered. Skip silently if the script or the session directory is absent.
+2. Extract the session's remaining learnings (explicit directives, recurring patterns, decisions).
+   This subjective pass comes **on top of** the mechanical one, not instead of it.
+3. Update the ledger: for each, find a *semantically equivalent* candidate (not exact wording)
    and increment `count` + `last_seen`; else add a new entry (`count:1`). Plain JSONL read/write.
-3. **Promotion** — for candidates crossing the threshold (`explicit` OR `count>=3` OR `high_cost`),
-   route by the matrix and **propose** each (do not apply). On approval: write to the destination,
-   then remove the candidate from the ledger.
-4. **Purge** — propose (never auto) removing rules that name an absent file/symbol/flag, are
+   A candidate coming from step 1 carries `"source":"defect"` — it is evidence, not an impression.
+4. **Promotion** — for candidates crossing the threshold (`explicit` OR `count>=3` OR `high_cost`),
+   pick the **form** first (ladder below), then the destination (matrix below), and **propose**
+   each (do not apply). On approval: write to the destination, then remove the candidate.
+5. **Purge** — propose (never auto) removing rules that name an absent file/symbol/flag, are
    contradicted by a newer decision, or are dormant low-count candidates.
+
+**Enforcement ladder — pick the form before the destination.** A rule written in prose is paid
+for in context every session and obeyed only in good faith. Climb down and stop at the first rung
+that can carry the rule:
+
+| Rung | Form | What it looks like here |
+|---|---|---|
+| 1 | Tool constraint | `orchestrator` has no `Write`; a `tools:` allowlist; `isolation: worktree` |
+| 2 | Hook or linter | the `ruff format` hook; a `pre-commit` refusal |
+| 3 | Scripted check | `test-protocol.md` §A turned into a script |
+| 4 | Prose | a rule in `CLAUDE.md`, `.claude/context/*`, or a skill |
+
+Rung 4 is where everything lands today, and it should be the exception. The routing matrix below
+applies **only** once no rung above can carry the rule.
 
 **Routing matrix** (destination by scope, only once confidence is confirmed):
 | Scope | Destination |

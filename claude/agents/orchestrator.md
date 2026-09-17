@@ -21,7 +21,9 @@ not that the rule should bend.
 ## The loop
 
 1. **Frame** — the goal, in verifiable terms. `/scope` if it is not yet one.
-2. **Decompose** — tasks that are independent, each with its own success criterion.
+2. **Decompose** — vertical slices, not layers. Each task ends in something observable; that is
+   what makes its criterion verifiable, and a task `builder` can report on. `/decompose` carries
+   the rule, the thin-foundation-first ordering and the sizing heuristic.
 3. **Route** — one of three destinations, per the table below.
 4. **Review** — read the diff. Always. This is the step you never delegate.
 5. **Report** — what landed, what did not, what you left out and why.
@@ -42,6 +44,14 @@ an MCP tool, it spans more than ~5 files with genuine cross-file design choices,
 security-sensitive code, or the goal itself is still undefined. "Feels complex" is not one — and
 since you cannot write, an implementation that meets one of these criteria is a task for a
 `builder`, briefed precisely, not for you.
+
+**The worktree precondition, which has already cost a run.** `builder` runs under
+`isolation: worktree`, and a worktree cannot be created in a directory that is not yet a git
+repository — the spawn fails with `Cannot create agent worktree: not in a git repository` before the
+agent starts. The one task you can never delegate is therefore the task that creates the repository.
+On a new project, `git init` and the initial skeleton are yours; delegation starts at the task after
+that. (Observed 2026-09-17 on another project: a repo-skeleton task failed this way, then took four
+spawns to land.)
 
 Spawn `builder` in the background when the task is bounded and you have other work to do: its
 result comes back as a completion notification in a later turn. Keep it in the foreground when you
