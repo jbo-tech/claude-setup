@@ -5,27 +5,44 @@ read from `.claude/context/decisions.md` + `status.md`. See [`architecture.md`](
 for the mental model.
 
 > Note: `.claude/` is git-ignored, so the intent record (`decisions.md`) is local scratch, not
-> tracked history. Drift below is correct as of generation; much of it is simply **this session's
-> work not yet captured by `/retro`** — running `/retro` should clear most "untraced" items.
+> tracked history. Unlike previous generations, the untraced items below are **not** pending-`/retro`
+> artifacts that will clear themselves — each is a real gap between the repo, the installed tree and
+> the recorded decisions, and each needs a call.
 
 ## Drift — to arbitrate
 
 **Recorded but not applied**
-- None open. The `delegate.sh` permission — the oldest item here, carried unactioned across four
-  generations of this doc — was **closed on 2026-08-30 by dropping it**, not by doing it. Three
-  months of tolerating the approval prompt was taken as the answer. Now traced in `decisions.md`,
-  so it does not return as untraced drift.
+- None open.
 
 **Code diverged from a recorded decision**
-- None open. `learning-loop-spec.md` declared itself *"pas encore implémentée"* while the loop had
-  been running since 2026-06-04 (22 candidates in the ledger, last entry 2026-08-29). **Fixed
-  2026-08-30:** its status line now says implemented, names `retro.md` §7 as authoritative, and
-  states what the spec still carries that the command does not.
+- ⚠ **`document.md` contradicts itself in one paragraph.** The 2026-09-16 decision added a third,
+  conditional artifact and the command implements it — but the *Don't proliferate documents* intro
+  still opens with "This command **owns exactly two files**", two lines above a numbered rule that
+  lists three. A reader who stops at the bold sentence concludes the protocol is out of scope.
+  → *File:* `claude/commands/document.md`, "Don't proliferate documents". *Question:* one-word fix,
+  or does the sentence want rewriting to name what the third file is conditional on?
 
-**Significant choices with no traced decision** (silent drift — likely pending `/retro`)
-- None open. The per-task model mapping in `delegate.yaml` is now covered by the 2026-06-04
-  *"Delegate provider : opencode-go"* decision, which records the tier ventilation explicitly.
-  This item is **cleared**.
+**Significant choices with no traced decision** (silent drift)
+- ⚠ **Four personal commands live outside the repo.** *Was five; `decompose` was repatriated
+  2026-09-17.* `worktree-setup`, `worktree-merge`, `git-pr` and `history` exist in
+  `~/.claude/commands/` as **plain files**, not symlinks. They carry proper `description:`
+  front-matter and show up in the slash menu, so they are real working commands — but `install.sh`
+  never links them, git never sees them, and a machine change loses all four. `status.md` recorded
+  "18 commands" on 2026-06-05; the repo now holds 14. This is the `data-ml-expert` failure
+  (anti-pattern, 2026-08-29) repeating one layer up, and the same fix applies: move the file into
+  `claude/commands/`, re-run `install.sh`, confirm the result is a symlink — that is exactly what
+  `decompose` just went through. *Question:* are the remaining four wanted, or is this the moment
+  to drop some — commands are the scarcest namespace here.
+  → *Check:* [`test-protocol.md`](test-protocol.md) §A.1.
+- ⚠ **`delegate.yaml` has diverged, and the repo is the stale side.** The installed copy at
+  `~/.config/claude-code/delegate.yaml` is *ahead*: priorities between `vibe` and `opencode` are
+  swapped, three models were re-pointed (`qwen3.7-max`, `kimi-k2.7-code`, `glm-5.2`), and a whole
+  backend — `opencode-archi`, `task: architecture` — was added. None of it is in the repo. The
+  "copy, not symlink" design is doing exactly what it was designed to do; what is missing is the
+  step back. *Cost:* a fresh install on a new machine silently **downgrades** the delegation config
+  to a two-month-old state. *Question:* re-sync repo ← installed, then record the new tier mapping
+  in `decisions.md` — or decide the installed copy is scratch and the repo's version is the intent?
+  → *Check:* [`test-protocol.md`](test-protocol.md) §A.2.
 
 **Known debt**
 - ⚠ **debt: `storage` persistence across `execute_code` calls is unmeasured.**
@@ -37,12 +54,12 @@ for the mental model.
   confirmed with `penpot_api_info` — run part A and part B back to back meanwhile. → *File:*
   `claude/skills/safe-penpot-writes/scripts/verifyPersistence.js`.
 - ⚠ **debt: the staleness flag is blind to uncommitted work.** `/retro` step 8 runs
-  `git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'`. Demonstrated on this run: the stamp equals
-  `HEAD`, so the check reports **0 files changed** while five files sit dirty in the working tree —
-  including the skill these docs describe. The mechanism is correct for its stated job (flagging
-  drift across commits) and silently wrong for how this repo is actually used (a full session of
-  work before a single commit). *Cost:* the one automated signal that these docs went stale is
-  absent exactly when a long session makes them stale. → *Files:* `claude/commands/retro.md` §8,
+  `git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'`. It fires correctly when work has been
+  committed — it did on 2026-09-16, naming four files. It stayed silent on 2026-08-30 with six files
+  dirty and none committed. The mechanism is correct for its stated job (flagging drift across
+  commits) and silently wrong for how this repo is often used (a full session of work before a single
+  commit). *Cost:* the one automated signal that these docs went stale is absent exactly when a long
+  session makes them stale. → *Files:* `claude/commands/retro.md` §8,
   `docs/architecture.md` front-matter. *Question:* compare against the working tree
   (`git status --porcelain` alongside the commit diff), or accept the limit and rely on running
   `/document` deliberately?
@@ -61,15 +78,28 @@ for the mental model.
   delegation looks "successful but empty". *Cost:* silent no-work delegations until Vibe's `-p` path
   is fixed. Not a tracking bug — flagged so it isn't mistaken for one. → *File:* external (Vibe).
 - ⚠ **debt: no automated tests.** The whole framework is validated manually (per the v1 scope's
-  explicit "tests out of scope"). `install.sh`'s new `check_skill_deps` and the six agent frontmatters
-  were validated by one live run and by reading the session's agent listing, not by a suite.
-  *Cost:* a frontmatter field silently ignored is exactly the class of bug that went unnoticed for
-  six months — and nothing but a human reading the listing catches it today.
-- ⚠ **debt: `builder` and `orchestrator` are unexercised.** Both were written, installed and
-  committed on 2026-08-29 without a real run. The contract (worktree containment, the five report
-  headings, resumption at `maxTurns`) is documented and mechanically plausible, not observed.
-  *Cost:* the first real delegation is also the first test. → *Files:* `claude/agents/builder.md`,
-  `claude/agents/orchestrator.md`.
+  explicit "tests out of scope"). *Cost:* a frontmatter field silently ignored is exactly the class
+  of bug that went unnoticed for six months — and nothing but a person reading the session listing
+  catches it today. The steps live in [`test-protocol.md`](test-protocol.md); this line records only
+  that the gap exists.
+- ⚠ **debt: `settings.json` is shared by every project but receives project-scoped state.** It is
+  symlinked to `~/.claude/settings.json`, so anything written at user level lands in this repo — and
+  this repo is **public on GitHub**. On 2026-09-16 an `autoMode.environment` block describing another
+  project (its paths, its lab containers, its snapshot locations) arrived that way and was caught
+  only by reading the diff before a commit. Removed, never committed. *Cost:* the next one is caught
+  the same way, by a person who happens to look. *Question:* add a `pre-commit` hook refusing this
+  file when it names a path outside the repo, or keep relying on diff discipline?
+  → *File:* `claude/settings.json`. *Recorded in:* `.claude/context/anti-patterns.md`, 2026-09-16.
+- ⚠ **debt: `builder` and `orchestrator` are exercised but not instrumented.** *Superseded
+  2026-09-17.* The pair has run: one session on another project spawned `builder` **ten times**
+  across a phase of setup tasks. That first real run also produced the first real defect — the
+  opening spawn failed with `Cannot create agent worktree: not in a git repository`, because the
+  task was to create the repository skeleton, and the same task needed **four spawns** to land. The
+  root cause is now written into `builder.md`. *Remaining cost:* nothing in the framework noticed.
+  The failure and the three retries sat in a session transcript and reached no ledger, no
+  `anti-patterns.md`, no retro. That is the gap `extract-defects.py` + `/retro` §7 step 1 close;
+  whether they actually close it is unmeasured until a retro runs on a session with defects in it.
+  → *Files:* `claude/agents/builder.md`, `claude/scripts/extract-defects.py`.
 
 **Also worth watching (not strict drift)**
 - **`data-rag-expert` has no paired knowledge skill.** Every other reviewer pairs with one
@@ -82,6 +112,13 @@ for the mental model.
   the `audit-*` trio). Agents: **6**, up from 2 — the family naming holds for now, but the
   anti-pattern note applies equally: *an artifact with 0 invocations in 60 days is a deletion
   candidate*.
+- **A decision was contradicted three days after it was recorded, and it took two weeks to notice.**
+  The 2026-08-28 decision keeps an *alias* in `settings.json` rather than a pinned model id, because
+  a pin goes stale in silence. `883425e` (2026-09-01) pinned `claude-fable-5[1m]`. By the time it was
+  caught (`fa4cb00`, 2026-09-17) Fable 5.1 had shipped, so the default had been pointing at the
+  previous generation. Nothing detects this class of contradiction except a `/document` run reading
+  `decisions.md` against the code — which is what just happened. Worth knowing the mechanism is
+  *this document*, on demand, and nothing faster.
 - **`claude/CLAUDE.md` now carries vendored third-party content.** The Penpot AI kit block is
   installer-generated and rewritten in place through the symlink. It is committed on purpose, but it
   means `git diff` on that file can show changes nobody in this repo wrote.
@@ -92,13 +129,15 @@ for the mental model.
   40-line operational contract lives in `retro.md` §7 and is authoritative). Status line corrected
   2026-08-30. The overlap between the two is real: **the open option is pruning the spec down to
   reasoning + risks**, deferred until the duplication actually misleads someone.
-- `architecture.md`, `reference.md` → owned/regenerated by `/document`.
-- No redundant or orphaned docs found. Doc set is sharp; the only issue is one stale status line.
+- `architecture.md`, `reference.md`, `test-protocol.md` → owned/regenerated by `/document`.
+  The protocol is new this run; it is the only one of the three that a reader is expected to *act*
+  on rather than read, and the only one whose content changes without the code changing.
+- No redundant or orphaned docs found. Doc set is sharp.
 
-> **Cleared since the 2026-06-13 generation:** the `delegate.yaml` per-task model mapping (traced
-> in the 2026-06-04 opencode-go decision), the `delegate.sh` permission (dropped 2026-08-30) and the
-> `learning-loop-spec.md` status line (fixed 2026-08-30). **No drift is open today** — the list
-> below is debt and watch items only.
+> **Cleared since the 2026-08-30 generation:** nothing regressed, and the three items closed then
+> (the `delegate.sh` permission, the `learning-loop-spec.md` status line, the `delegate.yaml` tier
+> mapping) stay closed. **Three drift items opened this run** — all three were found by comparing
+> the *installed* tree and the recorded decisions against the repo, not by reading the repo alone.
 
 ---
 
@@ -151,7 +190,12 @@ Explicit, user-invoked. The load-bearing ones:
 - **`retro.md`** — end-of-session retrospective: rewrites `status.md`, appends `anti-patterns.md`/
   `decisions.md`, applies `CLAUDE.md`/`README.md`. Now also runs the **learning-loop** capitalization
   (step 7) and **flags doc staleness** (step 8, keys off `architecture.md` front-matter).
-- **`document.md`** — this command: regenerates `architecture.md` + `reference.md` on demand.
+- **`document.md`** — this command: regenerates `architecture.md` + `reference.md` on demand, plus
+  `test-protocol.md` **when the project has verification paths a test suite cannot cover** (this one
+  does — it has no test suite at all). The first two are descriptive and terminal; the protocol is
+  prescriptive and cyclical, self-contained by contract, and closes its own loop by re-reading its
+  previous version and the traces its steps declare. `/retro` is not involved.
+  ⚠ **drift:** the section intro still claims the command owns two files — see the summary.
 - **`audit.md`** / `audit-ml.md` / `audit-accessibility.md` — review passes (security/optimization/
   homogeneity; ML; a11y).
 - **`scope.md`**, `bootstrap.md`, `explore.md`, `git-commit.md`.

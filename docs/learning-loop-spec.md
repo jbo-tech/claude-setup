@@ -81,7 +81,33 @@ Une règle promue peut devenir obsolète :
 > en `CLAUDE.md` global sans attendre la récurrence. Un pattern récurrent mais propre à un
 > repo reste en `CLAUDE.md` projet — il ne doit **surtout pas** remonter en global.
 
-## 4. Matrice de routage
+## 4. Forme et destination
+
+### 4.a — L'échelle d'application : la forme avant la destination
+
+*Ajout du 2026-09-17, issu d'un REX sur l'industrialisation d'agents.*
+
+La matrice ci-dessous répond à **où** ranger une règle. Elle ne répond pas à **sous quelle forme**,
+et par défaut tout atterrit en prose — le niveau le plus faible. Une règle en prose se paie en
+contexte à chaque session et n'est respectée que par bonne volonté ; c'est la leçon des trois
+agents déclarés en `allowed-tools:` (champ ignoré) restés six mois sans contrainte réelle.
+
+Avant de choisir une destination, descendre l'échelle et s'arrêter au premier barreau qui porte
+la règle :
+
+| Barreau | Forme | Chez nous |
+|---|---|---|
+| 1 | Contrainte d'outil | `orchestrator` sans `Write` ; `tools:` ; `isolation: worktree` |
+| 2 | Hook / linter | le hook `ruff format` ; un refus en `pre-commit` |
+| 3 | Vérification scriptée | `test-protocol.md` §A transformé en script |
+| 4 | Prose | `CLAUDE.md`, `.claude/context/*`, une skill |
+
+Ce que l'on sacrifie : une règle mécanique est plus lourde à écrire et plus rigide à retirer
+qu'une phrase. Quand choisir autrement : une préférence de style ou de ton n'a pas de forme
+mécanique — la prose est sa place, pas son échec. Comment surveiller : si la taille de
+`CLAUDE.md` monte sans que le taux de respect monte, c'est qu'on promeut au mauvais barreau.
+
+### 4.b — Matrice de routage
 
 | Portée ↓ \ Confiance → | Faible (staging) | Confirmée (explicite OU récurrence≥3) |
 |---|---|---|
@@ -101,6 +127,25 @@ Une règle promue peut devenir obsolète :
 
 La récurrence se mesure **à travers les sessions**, donc il faut une mémoire des candidats
 **avant** qu'ils atteignent le seuil. C'est le chaînon manquant.
+
+### Source mécanique : les défauts
+
+*Ajout du 2026-09-17.* Le comptage n'a de valeur que si son entrée est fiable. « Les observations
+de la session » ne l'est pas : c'est ce dont on se souvient en fin de course. Une source mesurable
+existe déjà, inexploitée — **les transcriptions de session**.
+
+`claude/scripts/extract-defects.py` les lit et remonte deux signaux : les lancements de sous-agents
+qui ont échoué, et les tâches relancées plusieurs fois. Chacun est un **défaut** : quelque chose que
+l'usine a produit et qu'il a fallu refaire. Il arrive daté, dénombré, avec son message d'erreur —
+pas comme une impression.
+
+Premier cas réel (un autre projet, 2026-09-17) : une tâche de création de squelette de dépôt a
+échoué sur `Cannot create agent worktree: not in a git repository` puis a demandé quatre
+lancements. Cause racine : `builder` est isolé par worktree, et la tâche consistait justement à
+créer le dépôt. Règle, barreau 1 de l'échelle §4.a. Rien de tout cela n'a atteint le ledger avant
+cet ajout.
+
+Le pas subjectif (directives, patterns, décisions) reste — **en plus**, pas à la place.
 
 ### Candidate ledger
 
@@ -187,7 +232,13 @@ L'ajout ne doit **pas alourdir** `/retro`. Règles :
 ## 8. Risques & points à valider empiriquement
 
 - **Stabilité du fingerprint** — cœur du comptage. À tester sur des observations réelles avant
-  de faire confiance au seuil ≥3.
+  de faire confiance au seuil ≥3. *Partiellement adressé 2026-09-17 :* un candidat issu d'un défaut
+  (§5) porte une identité déjà stable — l'identifiant de tâche, le message d'erreur. Le risque ne
+  subsiste que pour les candidats subjectifs.
+- **L'extracteur lui-même n'est pas mesuré.** Il ne voit que ce que les transcriptions contiennent :
+  échecs de lancement et relances. Une sortie d'agent fausse mais acceptée du premier coup lui
+  échappe entièrement — c'est un filet, pas une couverture. À réévaluer après trois retros : s'il ne
+  remonte rien d'exploitable, le retirer plutôt que l'élargir.
 - **Fatigue de validation** — en conservateur, chaque `/retro` peut proposer plusieurs promotions.
   Garder les propositions groupées et rares ; si le bruit monte, durcir les seuils.
 - **Inférence de portée** — un mauvais classement remonte un quirk en global. La validation

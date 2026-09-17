@@ -1,6 +1,6 @@
 ---
-generated_from_commit: e414303
-generated_on: 2026-08-30
+generated_from_commit: fa4cb00
+generated_on: 2026-09-17
 ---
 
 # Architecture — claude-setup
@@ -72,13 +72,13 @@ start of a session.
 | `install.sh` | Symlink commands/agents/scripts/skills + `CLAUDE.md`/`settings.json` into `~/.claude`; **copy** `delegate.yaml` into `~/.config/claude-code/`; warn on missing external skill dependencies; record every link in a TSV manifest; back up conflicts. |
 | `uninstall.sh` | Reverse the install using the manifest — remove only what we created, only if untouched. |
 | `claude/CLAUDE.md` | Always-loaded global preferences: language, problem-solving, code style, **delegation rules**, role personalities, plus the vendored Penpot AI kit block (installer-generated — never edit between its markers). |
-| `claude/commands/*.md` (13) | Slash commands — explicit, user-invoked workflows (audit trio, delegate quartet, retro, document, scope, explore, bootstrap, git-commit). |
+| `claude/commands/*.md` (14) | Slash commands — explicit, user-invoked workflows (audit trio, delegate quartet, retro, document, scope, explore, bootstrap, git-commit). |
 | `claude/skills/*/` (8) | Auto-routed domain expertise (agent-builder, creative-direction, data-engineering, delegate, infra-containers, provider-keys, safe-penpot-writes, security-review). |
 | `claude/agents/*.md` (6) | Personas in three families — see below. |
-| `claude/scripts/` | Runtime helpers: `delegate.sh` (backend router + run logger), `delegate-parse-session.py` (reads a backend's native session log for cost/tokens), `delegate-status.py` (centralized usage dashboard), `statusline.py` (default status line), `context-bar.sh` (legacy status line). |
+| `claude/scripts/` | Runtime helpers: `delegate.sh` (backend router + run logger), `delegate-parse-session.py` (reads a backend's native session log for cost/tokens), `delegate-status.py` (centralized usage dashboard), `statusline.py` (default status line), `context-bar.sh` (legacy status line), `extract-defects.py` (read-only defect report feeding `/retro` §7). |
 | `claude/config/delegate.yaml` | The one user-editable config — delegation backends + task→model routing. Copied, never symlinked. |
 | `.claude/context/*` | **This repo's own** session memory (status, decisions, anti-patterns). Git-ignored — local scratch, project source of truth for retros. |
-| `docs/` | Maintainer-facing docs (specs + these orientation docs). Tracked, unlike `.claude/`. |
+| `docs/` | Maintainer-facing docs: specs, these orientation docs, and the manual test protocol. Tracked, unlike `.claude/`. |
 
 ### The three agent families
 
@@ -162,6 +162,14 @@ orchestrator reads the diff.
   things the *repo owns* are symlinked. Respect this when adding new config.
 - **Usage tracking is parse-only**: cost/tokens come from each backend's *own* session logs — this
   repo never re-implements pricing. See [`reference.md`](reference.md) for the correlation caveat.
+- **The installed tree is not a mirror — check it, both directions.** The symlink model makes the
+  repo authoritative *for what it contains*, and says nothing about what else lives in `~/.claude/`.
+  Two ways they diverge, both live today: an artifact created directly in `~/.claude/` is a plain
+  file the installer never links and git never sees (four commands are in that state — see
+  [`reference.md`](reference.md)); and `delegate.yaml`, being a **copy**, drifts on the installed
+  side, where it is currently *ahead* of the repo. A fresh install on a new machine loses the first
+  and regresses the second. The check is mechanical and belongs to
+  [`test-protocol.md`](test-protocol.md) §A.
 - **Docs freshness is commit-based, and that is a real limit**: `/retro` compares this file's
   `generated_from_commit` stamp to `HEAD`. It cannot see uncommitted work. A session that writes all
   day without committing leaves these docs describing a tree that has moved, while the check reports
@@ -174,3 +182,5 @@ orchestrator reads the diff.
   capitalization step. Complementary, not superseded by these two files.
 - [`reference.md`](reference.md) — the public surface of each component, plus the drift and debt
   the owner has to arbitrate.
+- [`test-protocol.md`](test-protocol.md) — what only a person can verify in this framework, and how.
+  This repo has no test suite, so that document is the whole verification layer.
