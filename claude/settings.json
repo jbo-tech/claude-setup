@@ -35,7 +35,7 @@
       "Bash(chmod 777 *)"
     ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus",
   "hooks": {
     "PostToolUse": [
       {
