@@ -1,5 +1,5 @@
 ---
-description: Analyze changes and create conventional-commit commits
+description: Create conventional-commit commits, and open the PR when the branch is done
 ---
 
 # Commit
@@ -97,6 +97,67 @@ Proceed with this split? (yes / single commit / edit)
 - **Check for debug code** — warn about console.log, print statements, debugger
 - **Respect .gitignore** — don't suggest staging ignored files
 - **Ask if unsure** — ambiguous changes deserve clarification before commit
+
+---
+
+# Part 2 — Open the pull request (`/git-commit pr`)
+
+Only when the branch is finished and its commits are in place. Requires `gh` installed and
+authenticated.
+
+## 1. Gather context
+
+```bash
+git branch --show-current
+git log main..HEAD --oneline
+git diff main --stat
+```
+
+Refuse and stop if the current branch **is** `main`/`master`. Warn on uncommitted changes and on
+WIP commits (offer to squash). Warn loudly if the diff contains `.env`, credentials or anything
+that looks like a secret.
+
+## 2. Push if needed
+
+```bash
+git push -u origin "$(git branch --show-current)"
+```
+
+## 3. Write the description
+
+Title: the conventional-commit subject when the branch is one change; a descriptive summary when
+it is several.
+
+```markdown
+## Summary
+[2-3 sentences: what this PR does and why]
+
+## Changes
+- [Key change]
+
+## Testing
+[How it was tested, and what a reviewer should check]
+
+## Notes for reviewers
+[Concerns, alternatives considered, anything to look at first]
+```
+
+If commit messages reference issues (`#123`), carry them into the body so the PR links them.
+
+## 4. Create
+
+```bash
+gh pr create --title "..." --body "..."      # add --draft, or --base <branch>, as asked
+```
+
+Report the URL, the commits included, and what you would have a reviewer look at.
+
+## Arguments
+
+- `/git-commit` — commits only (the default)
+- `/git-commit pr` — commits, then open the PR
+- `/git-commit pr draft` — the same, as a draft
+- `/git-commit pr base:develop` — target another base branch
 
 ---
 

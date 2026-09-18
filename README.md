@@ -89,22 +89,20 @@ claude/
 
 ## Commands
 
+Eleven commands, deliberately. Anything Claude Code now does natively was removed rather than
+wrapped — see [What was removed, and where it went](#what-was-removed-and-where-it-went).
+
 | Command | Description |
 |---------|-------------|
-| `/bootstrap` | Initialize project context |
-| `/scope` | Entry point (what / why / how) — hands off to `/goal` |
+| `/scope` | Entry point — what, why, and the success criteria |
 | `/explore [tag]` | Exploration (tags: `technical`, `architecture`, `business`, `user`) |
 | `/decompose` | Break a scope into vertical slices — thin foundation first, then parallel slices |
-| `/audit` | General code audit (security, optimization, homogeneity) |
-| `/audit-ml` | Specialized ML / DL audit (leakage, validation, serving) |
-| `/audit-accessibility` | Specialized accessibility audit (WCAG / ARIA / RGAA) |
-| `/delegate [--task <type>]` | Delegate coding task to cheaper agent CLI |
-| `/delegate-on` | Enable auto-delegation for project |
-| `/delegate-off` | Disable auto-delegation |
-| `/delegate-status` | Show delegation backend status + centralized cost/token usage |
-| `/git-commit` | Git commit |
-| `/retro` | Session retrospective |
-| `/document` | Generate orientation docs (architecture + reference/drift/debt, plus a manual test protocol when the project has verification paths the tests cannot cover) in `docs/` |
+| `/bootstrap` | Initialize project context (`.claude/context/` + CLAUDE.md) |
+| `/document` | Generate orientation docs (architecture + reference, plus a test protocol when warranted) |
+| `/delegate [--task <type>]` | Delegate a coding task to a cheaper agent CLI |
+| `/delegate-on` / `-off` / `-status` | Auto-delegation for this project, and the usage dashboard |
+| `/git-commit [pr]` | Conventional commits — and open the pull request when the branch is done |
+| `/retro` | End-of-session retrospective and learning loop |
 
 ### Delegate — task routing
 
@@ -112,47 +110,92 @@ claude/
 
 | `--task` | Model (tier) | Best for |
 |----------|-------|----------|
-| `coding` | deepseek-v4-flash (easy) | Simple edits in any language |
+| `coding` | kimi-k2.7-code (easy) | Simple, bounded edits in any language |
 | `python` | minimax-m3 (complex) | Python files, data scripts, ML code |
+| `architecture` | glm-5.2 (complex) | Architecture and brainstorming work |
 | `marketing` | deepseek-v4-pro (medium) | README, docs, copywriting |
-| _(omit)_ | deepseek-v4-pro / mistral-medium-3.5 (vibe) | Complex / multi-file / unclear |
+| _(omit)_ | qwen3.7-max (opencode) / mistral-medium-3.5 (vibe) | Complex / multi-file / unclear |
 
 Backend config lives in `~/.config/claude-code/delegate.yaml`. Add or swap models without touching the skill.
 
 ## Workflow
 
+### The spine
+
+Three commands carry every session. The rest are occasional.
+
 ```
-┌─────────────┐
-│ /bootstrap  │  (project context)
-└─────────────┘
-       ↓
-┌─────────────┐
-│  /explore   │  (understanding)
-└─────────────┘
-       ↓
-┌─────────────┐
-│   /scope    │  (what / why / how)
-└─────────────┘
-       ↓
-   Clear? ──→ Unclear → /explore [tag] → back to /scope
-       ↓
-   ┌───────┴───────┐
-   ↓               ↓
-  Code         /goal (autonomous execution)
-   ↓               ↓
-/git-commit   /git-commit
-   └───┬───────────┘
-       ↓
-  delegate-auto? ──→ oui → /delegate (cheaper model)
-       ↓
-      non → code direct
-       ↓
-   /git-commit
-       ↓
-     /retro
+/scope  ─────────▶  work  ─────────▶  /retro
+  what & why      (delegate when         what the session
+                   it pays)              taught the setup
 ```
 
-Specialized audits (`/audit`, `/audit-ml`, `/audit-accessibility`) are called on demand throughout the flow.
+A one-line fix needs none of them. A day of work needs all three. **`/retro` closes anything that
+ran more than an hour** — it is the only step that makes the setup improve instead of just persist.
+
+### By kind of session
+
+| Session | Entry | Loop | Exit |
+|---|---|---|---|
+| **Quick fix** | none | code; `/code-review` if it touches anything sensitive | `/git-commit` |
+| **A feature** | `/scope` | code, or `/delegate` when the task is bounded | `/git-commit` → `/retro` |
+| **A new project** | `/scope` → `/decompose` | foundation in the main session, then slices in parallel | `/git-commit` → `/retro` |
+| **Taking over an existing codebase** | `/document` to understand, then `/bootstrap` | whatever it turns up | `/retro` |
+| **Exploration / R&D** | plan mode, or `/explore` | conversation, domain agents | `/retro` |
+| **Data / ML** | `/scope` | the `data-engineering` and `ml-review` skills route themselves | `/retro` |
+| **This framework** | — | `docs/test-protocol.md` §A | `/document` → `/retro` |
+
+### The full run — orchestrator-driven
+
+For a project big enough to decompose. Start the session in the pilot seat:
+
+```bash
+claude --agent orchestrator     # no Write/Edit — it cannot implement, by construction
+```
+
+```
+ 1. /scope                  what, why, success criteria as a checklist
+ 2. /explore                only if questions remain
+ 3. /decompose              thin shared foundation, then vertical slices
+ 4. foundation              in the main session — never a builder: a worktree
+                            cannot be created in a directory that is not yet a repo
+ 5. per slice               builder (its own worktree, created and cleaned for you)
+                            or /delegate (cheaper CLI, no worktree)
+ 6. read the diff           always, and never delegated
+ 7. /code-review            the diff; the security-review skill fires on its own when
+                            the change touches input, auth or secrets
+ 8. /git-commit [pr]
+ 9. /document               only if the architecture actually moved
+10. /retro                  defects → ledger → rules, at the right level
+```
+
+Steps 1-3 are the plan, 4-6 the build, 7-8 the validation, 10 the improvement of the setup itself.
+The loop only pays from the second slice onward — that is what makes it a loop and not a checklist.
+
+### What was removed, and where it went
+
+Six commands were deleted once Claude Code covered them natively. Nothing was lost silently — this
+is where each went:
+
+| Removed | Use instead |
+|---|---|
+| `/audit` | `/code-review` (native) for bugs and cleanup; the **`security-review` skill** for the security axis, which `/code-review` does not cover |
+| `/audit-ml` | the **`ml-review` skill** — same four checks (leakage, validation, reproducibility, serving), and it routes on the words of the subject instead of waiting to be named |
+| `/audit-accessibility` | the `web-design-guidelines` and `impeccable` skills |
+| `/worktree-setup`, `/worktree-merge` | `builder` runs under `isolation: worktree` — created, merged and cleaned automatically. `EnterWorktree` is native for a single session |
+| `/history` | `claude --resume` |
+| `/git-pr` | folded into `/git-commit pr` |
+
+**How to run a domain audit now.** Three routes, in increasing weight:
+
+- **A skill** — say what the subject is, and it loads itself: security, ML, data pipelines, infra,
+  accessibility. Nothing to remember.
+- **A reviewer agent** — `@data-ml-expert`, `@data-rag-expert`, `@infra-expert`. Read-only, returns
+  a verdict. This is the deliberate audit pass.
+- **`/code-review high`** (native) on the diff, for correctness and cleanup at depth.
+
+A skill beats a command here for one reason: **a command has to be remembered, a skill fires on the
+words you were already typing.**
 
 ## Agents
 
@@ -216,7 +259,7 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 | Designing in Penpot | `safe-penpot-writes` (the write path only) | `penpot-ai-kit` (`penpot-*`, 12 skills) |
 | Delegate to cheaper models | `/delegate` + `/delegate-on` | `vibe-skill` (Mistral Vibe) |
 
-What this setup **adds** : the `/scope → /goal` handoff with structured success criteria, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), the `/audit-*` family, open-source-focused `data-engineering` and `infra-containers` skills, the `creative-director` agent, and `safe-penpot-writes` — the one Penpot concern the official kit
+What this setup **adds** : the `/scope` → `/decompose` handoff with structured success criteria and vertical slicing, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), open-source-focused `data-engineering` and `infra-containers` skills, the `creative-director` agent, and `safe-penpot-writes` — the one Penpot concern the official kit
 does not cover. Everything else is delegated.
 
 ### Recommended companions

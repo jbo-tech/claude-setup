@@ -1,11 +1,43 @@
 ---
 name: security-review
-description: Security best practices for infrastructure and deployments. Activates when the user mentions "secrets", "permissions", "exposed port", "CVE", "hardening", "vulnerability", "scan", "credentials", "TLS", "firewall", "root access", "capabilities". Do NOT use for container configuration (use infra-containers) unless the issue is specifically security-related.
+description: Security review of application code AND infrastructure. Activates when the user mentions "secrets", "credentials", "API key", "token", "permissions", "auth", "authorization", "input validation", "sanitize", "SQL injection", "command injection", "XSS", "path traversal", "SSRF", "OWASP", "exposed port", "CVE", "hardening", "vulnerability", "scan", "TLS", "firewall", "root access", "capabilities" — and on any request to review or audit code for security. Do NOT use for container configuration (use infra-containers) unless the issue is specifically security-related.
 ---
 
 # Security Review
 
-Guidance for infrastructure, container and deployment security.
+Guidance for the security of application code, infrastructure, containers and deployments.
+
+> This skill carries the security axis that `/code-review` does not. Claude Code's native
+> `/code-review` hunts correctness bugs and cleanup opportunities; it is not a security pass. When a
+> change touches input handling, authentication, secrets or a fetch of a user-supplied URL, this is
+> the checklist to run alongside it.
+
+## Application code
+
+### Secrets
+- No `.env`, credential, API key or token committed — or about to be
+- No secret in a log line, an error message, or a URL
+- Configuration read from the environment, not hardcoded
+
+### Input validation
+- User input sanitised before use in SQL, shell, filesystem paths, or HTML
+- Validation at the boundary, once, not scattered through the call chain
+- Size and type bounds on anything read from outside (uploads, payloads, query params)
+
+### Injection surfaces
+- **SQL** — parameterised queries, never string concatenation
+- **Command** — no user data reaching a shell; argument arrays, not shell strings
+- **Path traversal** — resolve and confirm the path stays inside its intended root
+- **XSS** — escaping at render time, and the right escaping for the context
+
+### Auth & authorization
+- The check exists where it is expected — every route, not just the obvious ones
+- Authorisation is checked against the *object*, not only the session
+- No guard that can be skipped by taking a different entry point
+
+### Dependencies
+- Nothing obviously outdated or known-vulnerable introduced by this change
+- New dependency justified — each one is a supply-chain surface
 
 ## When this skill activates
 

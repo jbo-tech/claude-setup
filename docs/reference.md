@@ -15,34 +15,21 @@ for the mental model.
 - None open.
 
 **Code diverged from a recorded decision**
-- ⚠ **`document.md` contradicts itself in one paragraph.** The 2026-09-16 decision added a third,
-  conditional artifact and the command implements it — but the *Don't proliferate documents* intro
-  still opens with "This command **owns exactly two files**", two lines above a numbered rule that
-  lists three. A reader who stops at the bold sentence concludes the protocol is out of scope.
-  → *File:* `claude/commands/document.md`, "Don't proliferate documents". *Question:* one-word fix,
-  or does the sentence want rewriting to name what the third file is conditional on?
+- ✅ **`document.md` contradicted itself in one paragraph.** *Closed 2026-09-17* — the sentence now
+  reads "owns a fixed set of files — two always, a third when the project warrants it", which is
+  what the numbered rule below it already said.
 
 **Significant choices with no traced decision** (silent drift)
-- ⚠ **Four personal commands live outside the repo.** *Was five; `decompose` was repatriated
-  2026-09-17.* `worktree-setup`, `worktree-merge`, `git-pr` and `history` exist in
-  `~/.claude/commands/` as **plain files**, not symlinks. They carry proper `description:`
-  front-matter and show up in the slash menu, so they are real working commands — but `install.sh`
-  never links them, git never sees them, and a machine change loses all four. `status.md` recorded
-  "18 commands" on 2026-06-05; the repo now holds 14. This is the `data-ml-expert` failure
-  (anti-pattern, 2026-08-29) repeating one layer up, and the same fix applies: move the file into
-  `claude/commands/`, re-run `install.sh`, confirm the result is a symlink — that is exactly what
-  `decompose` just went through. *Question:* are the remaining four wanted, or is this the moment
-  to drop some — commands are the scarcest namespace here.
-  → *Check:* [`test-protocol.md`](test-protocol.md) §A.1.
-- ⚠ **`delegate.yaml` has diverged, and the repo is the stale side.** The installed copy at
-  `~/.config/claude-code/delegate.yaml` is *ahead*: priorities between `vibe` and `opencode` are
-  swapped, three models were re-pointed (`qwen3.7-max`, `kimi-k2.7-code`, `glm-5.2`), and a whole
-  backend — `opencode-archi`, `task: architecture` — was added. None of it is in the repo. The
-  "copy, not symlink" design is doing exactly what it was designed to do; what is missing is the
-  step back. *Cost:* a fresh install on a new machine silently **downgrades** the delegation config
-  to a two-month-old state. *Question:* re-sync repo ← installed, then record the new tier mapping
-  in `decisions.md` — or decide the installed copy is scratch and the repo's version is the intent?
-  → *Check:* [`test-protocol.md`](test-protocol.md) §A.2.
+- ✅ **Personal commands living outside the repo.** *Closed 2026-09-17.* All five were repatriated;
+  `~/.claude/commands/` now holds only the six third-party `penpot-*.md`, which is exactly what
+  [`test-protocol.md`](test-protocol.md) §A.1 expects. Four of the five were then **deleted** the
+  next day (below) — the repatriation was still the right move: it is what made them visible enough
+  to judge.
+- ✅ **`delegate.yaml` divergence.** *Closed 2026-09-17, repo ← installed.* The installed copy was
+  the intent and won: `vibe`/`opencode` priorities swapped (opencode first), three models re-pointed
+  (`qwen3.7-max`, `kimi-k2.7-code`, `glm-5.2`), and a fifth backend added — `opencode-archi`,
+  `task: architecture`, on `glm-5.2`, for architecture and brainstorming work. The "copy, not
+  symlink" design is unchanged, so this will drift again; §A.2 is the check that catches it.
 
 **Known debt**
 - ⚠ **debt: `storage` persistence across `execute_code` calls is unmeasured.**
@@ -53,7 +40,10 @@ for the mental model.
   *Remaining cost:* the pre-flight is unusable across two separated calls until the behaviour is
   confirmed with `penpot_api_info` — run part A and part B back to back meanwhile. → *File:*
   `claude/skills/safe-penpot-writes/scripts/verifyPersistence.js`.
-- ⚠ **debt: the staleness flag is blind to uncommitted work.** `/retro` step 8 runs
+- ✅ **debt: the staleness flag was blind to uncommitted work.** *Closed 2026-09-17* — `/retro` §8
+  now runs `git status --porcelain` alongside the commit diff and names which of the two fired.
+  The original entry, kept for the reasoning:
+- ⚠ ~~**debt: the staleness flag is blind to uncommitted work.**~~ `/retro` step 8 runs
   `git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'`. It fires correctly when work has been
   committed — it did on 2026-09-16, naming four files. It stayed silent on 2026-08-30 with six files
   dirty and none committed. The mechanism is correct for its stated job (flagging drift across
@@ -73,10 +63,16 @@ for the mental model.
   run to a backend session by *workdir + "most recent session at/after run start"*. Concurrent
   delegations in the same directory can mis-attribute metrics. Acceptable for sequential use (the
   normal case); documented in `SKILL.md`. *Cost:* wrong cost line on a run under heavy parallel use.
-- ⚠ **debt: Vibe `-p` no-op on this machine.** Vibe in programmatic mode returns 0 tokens / 0 files
-  without calling the model (likely auth/quota). The tracker faithfully logs the 0, so a Vibe
-  delegation looks "successful but empty". *Cost:* silent no-work delegations until Vibe's `-p` path
-  is fixed. Not a tracking bug — flagged so it isn't mistaken for one. → *File:* external (Vibe).
+- ⚠ **debt: delegations fail silently, in two different ways.** *Widened 2026-09-17.*
+  (a) **Vibe `-p` no-op** — Vibe in programmatic mode returns 0 tokens / 0 files without calling the
+  model (likely auth/quota), so a Vibe delegation looks "successful but empty".
+  (b) **Timeouts read as success** — `delegate.sh` exits 0 while the backend exited **124**. Observed
+  twice: 2026-07-11 (kimi-k2.7-code, 120s, another project) and 2026-09-17 (minimax-m3, 600s, this
+  repo, ten minutes for zero files). The exit code is logged faithfully in `delegate-runs.jsonl`;
+  what is missing is that nothing looks at it at the moment it matters. *Now partly mitigated:*
+  `extract-defects.py` reports non-zero delegations, so the recurrence is at least countable.
+  *Open question:* should `delegate.sh` propagate the backend's exit code instead of its own?
+  → *Files:* `claude/scripts/delegate.sh`, external (Vibe).
 - ⚠ **debt: no automated tests.** The whole framework is validated manually (per the v1 scope's
   explicit "tests out of scope"). *Cost:* a frontmatter field silently ignored is exactly the class
   of bug that went unnoticed for six months — and nothing but a person reading the session listing
@@ -102,16 +98,38 @@ for the mental model.
   → *Files:* `claude/agents/builder.md`, `claude/scripts/extract-defects.py`.
 
 **Also worth watching (not strict drift)**
+- **A configuration field that is silently ignored has now happened three times.** `allowed-tools:`
+  on three agents (six months, fixed 2026-08-29); five commands never linked because they were
+  created outside the repo (still four open); and — found 2026-09-17 — the `ruff` hook's matcher was
+  `Write(*.py)`, a path pattern in a field that matches **tool names**. It matched nothing, so the
+  hook had never run once, while `README.md` advertised "automatic formatting of Python files after
+  write" and `install.sh` warned when `ruff` was missing. Fixed to `Write|Edit` with the path read
+  from the hook's stdin JSON, and proven by writing a misformatted file and watching it come back
+  formatted. The pattern is stable enough to name: **this framework's characteristic failure is a
+  declaration that looks right and is never executed.** The defence is not more care — it is running
+  the thing once and looking. That is what `test-protocol.md` is for, and it did not cover hooks;
+  it should.
 - **`data-rag-expert` has no paired knowledge skill.** Every other reviewer pairs with one
   (`infra-expert` ↔ `infra-containers`, `data-ml-expert` ↔ `ml-review`). It is also described as the
   most-solicited profile. An agent must be invoked; a skill loads on the words of the subject. The
   2026-08-29 decision records this as a watch item with a concrete trigger: if you find yourself
   wanting the knowledge inline rather than as a review pass, add the skill.
-- **Namespace pressure is now on two axes.** Commands: **13** (early decisions targeted ~8); the
-  four `delegate*` are one feature, so the real question is the long tail (`bootstrap`, `explore`,
-  the `audit-*` trio). Agents: **6**, up from 2 — the family naming holds for now, but the
-  anti-pattern note applies equally: *an artifact with 0 invocations in 60 days is a deletion
-  candidate*.
+- ✅ **Namespace pressure — acted on 2026-09-18.** Commands went 18 → **11**: `/audit`,
+  `/audit-ml`, `/audit-accessibility`, `/worktree-setup`, `/worktree-merge` and `/history` deleted,
+  `/git-pr` folded into `/git-commit pr`. The criterion was not "rarely used" but **"Claude Code
+  now does this natively"** — `/code-review`, `EnterWorktree` plus `builder`'s own worktree
+  isolation, `claude --resume`. Two things are worth keeping in view:
+  (a) **`/code-review` is not a security pass.** It hunts correctness bugs and cleanup. Deleting
+  `/audit` would have dropped the security axis, so it moved into the `security-review` skill,
+  whose description was widened from infrastructure to application code (injection, auth, input
+  validation, secrets). A skill was the better home anyway: a command must be remembered, a skill
+  routes on the words of the subject.
+  (b) **The homogeneity axis moved from cure to prevention.** `/audit` checked style consistency
+  after the fact; the briefing contract (check command + reference files) now supplies it before
+  the code is written. Whether that actually works is unmeasured.
+  Agents stay at **6**. The rule *an artifact with 0 invocations in 60 days is a deletion candidate*
+  still has no counter behind it and has never been applied mechanically — this round was judgment,
+  not measurement. *Question:* build the counter (rung 3), or accept a quarterly prune by hand?
 - **A decision was contradicted three days after it was recorded, and it took two weeks to notice.**
   The 2026-08-28 decision keeps an *alias* in `settings.json` rather than a pinned model id, because
   a pin goes stale in silence. `883425e` (2026-09-01) pinned `claude-fable-5[1m]`. By the time it was
@@ -196,8 +214,7 @@ Explicit, user-invoked. The load-bearing ones:
   prescriptive and cyclical, self-contained by contract, and closes its own loop by re-reading its
   previous version and the traces its steps declare. `/retro` is not involved.
   ⚠ **drift:** the section intro still claims the command owns two files — see the summary.
-- **`audit.md`** / `audit-ml.md` / `audit-accessibility.md` — review passes (security/optimization/
-  homogeneity; ML; a11y).
+- **The `audit-*` trio** — deleted 2026-09-18; see the namespace entry above for where each went.
 - **`scope.md`**, `bootstrap.md`, `explore.md`, `git-commit.md`.
 
 ### claude/skills/ (8)

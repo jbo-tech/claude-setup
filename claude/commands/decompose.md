@@ -175,8 +175,10 @@ skeleton, do that step in the main session and start delegating at the next task
 ## Transition
 
 When decomposition is solid:
-- "Ready to set up parallel worktrees? Run `/worktree-setup [epic-name]`"
-- Or hand the foundation task to the session and the slices to `builder` / `/delegate`.
+- Do the foundation task in this session — it often creates the repo, and a `builder` worktree
+  cannot be created in a directory that is not yet one.
+- Then hand each slice to `builder` (it gets its own worktree, created and cleaned for you) or to
+  `/delegate` when an external model is cheap enough to earn the round trip.
 
 ---
 

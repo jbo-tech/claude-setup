@@ -1,6 +1,6 @@
 ---
 name: data-engineering
-description: Best practices for open-source data pipelines, ETL/ELT, data quality and storage. Activates when the user mentions "pipeline", "ETL", "data quality", "parquet", "duckdb", "kestra", "minio", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Do NOT use for machine learning or statistical analysis (use /audit-ml). For managed/commercial stacks (Snowflake, Databricks, dbt Cloud, Airflow on Astronomer), defer to astronomer-data plugin if available.
+description: Best practices for open-source data pipelines, ETL/ELT, data quality and storage. Activates when the user mentions "pipeline", "ETL", "data quality", "parquet", "duckdb", "kestra", "minio", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Do NOT use for machine learning or statistical analysis (use the ml-review skill). For managed/commercial stacks (Snowflake, Databricks, dbt Cloud, Airflow on Astronomer), defer to astronomer-data plugin if available.
 ---
 
 # Data Engineering
@@ -19,7 +19,7 @@ Guidance for designing and reviewing open-source data pipelines.
 - Airflow on Astronomer / managed Airflow → `astronomer-data` plugin
 - dbt Core / dbt Fusion → `astronomer-data:cosmos-*` skills
 - Snowflake / Databricks / BigQuery managed warehouses → `astronomer-data`
-- Pure ML/DL code → `/audit-ml`
+- Pure ML/DL code → the `ml-review` skill
 
 ## When this skill activates
 

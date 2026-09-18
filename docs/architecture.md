@@ -72,7 +72,7 @@ start of a session.
 | `install.sh` | Symlink commands/agents/scripts/skills + `CLAUDE.md`/`settings.json` into `~/.claude`; **copy** `delegate.yaml` into `~/.config/claude-code/`; warn on missing external skill dependencies; record every link in a TSV manifest; back up conflicts. |
 | `uninstall.sh` | Reverse the install using the manifest — remove only what we created, only if untouched. |
 | `claude/CLAUDE.md` | Always-loaded global preferences: language, problem-solving, code style, **delegation rules**, role personalities, plus the vendored Penpot AI kit block (installer-generated — never edit between its markers). |
-| `claude/commands/*.md` (14) | Slash commands — explicit, user-invoked workflows (audit trio, delegate quartet, retro, document, scope, explore, bootstrap, git-commit). |
+| `claude/commands/*.md` (11) | Slash commands — explicit, user-invoked workflows (scope, explore, decompose, bootstrap, document, the delegate quartet, git-commit, retro). Six were **deleted** 2026-09-18 once Claude Code covered them natively; the security axis of `/audit` moved into the `security-review` skill rather than disappearing. |
 | `claude/skills/*/` (8) | Auto-routed domain expertise (agent-builder, creative-direction, data-engineering, delegate, infra-containers, provider-keys, safe-penpot-writes, security-review). |
 | `claude/agents/*.md` (6) | Personas in three families — see below. |
 | `claude/scripts/` | Runtime helpers: `delegate.sh` (backend router + run logger), `delegate-parse-session.py` (reads a backend's native session log for cost/tokens), `delegate-status.py` (centralized usage dashboard), `statusline.py` (default status line), `context-bar.sh` (legacy status line), `extract-defects.py` (read-only defect report feeding `/retro` §7). |
@@ -165,10 +165,9 @@ orchestrator reads the diff.
 - **The installed tree is not a mirror — check it, both directions.** The symlink model makes the
   repo authoritative *for what it contains*, and says nothing about what else lives in `~/.claude/`.
   Two ways they diverge, both live today: an artifact created directly in `~/.claude/` is a plain
-  file the installer never links and git never sees (four commands are in that state — see
-  [`reference.md`](reference.md)); and `delegate.yaml`, being a **copy**, drifts on the installed
-  side, where it is currently *ahead* of the repo. A fresh install on a new machine loses the first
-  and regresses the second. The check is mechanical and belongs to
+  file the installer never links and git never sees (none today — the last four were repatriated
+  2026-09-17); and `delegate.yaml`, being a **copy**, drifts on the installed side (re-synced
+  2026-09-17, repo ← installed). Both had to be found by hand, and both will recur. The check is mechanical and belongs to
   [`test-protocol.md`](test-protocol.md) §A.
 - **Docs freshness is commit-based, and that is a real limit**: `/retro` compares this file's
   `generated_from_commit` stamp to `HEAD`. It cannot see uncommitted work. A session that writes all
