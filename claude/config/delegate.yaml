@@ -32,16 +32,16 @@ backends:
     workdir_flag: "--workdir"
     model: "mistral-medium-3.5"
     enabled: true
-    priority: 1
+    priority: 2
     needs_pty: true
 
   - name: "opencode"
     command: "opencode"
     args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "opencode-go/deepseek-v4-pro"  # medium tier
+    model: "opencode-go/qwen3.7-max"  # medium tier
     enabled: true
-    priority: 2
+    priority: 1
     needs_pty: false
 
   # --- Task-specialized backends (selected via --task flag) ---
@@ -49,14 +49,15 @@ backends:
   # Tier mapping (benchmarks June 2026):
   #   easy    -> deepseek-v4-flash  (79.0% SWE-verified, ~12x cheaper than Pro)
   #   medium  -> deepseek-v4-pro    (80.6% SWE-verified, LiveCodeBench leader)
+  #              alt: kimi-k2.7-code
   #   complex -> minimax-m3         (top open SWE-Pro 59.0%, strong reasoning)
-  #              alt: glm-5.1
+  #              alt: glm-5.2 or qwen3.7-max
 
   - name: "opencode-coding"  # easy: bounded edits
     command: "opencode"
     args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "opencode-go/deepseek-v4-flash"
+    model: "opencode-go/kimi-k2.7-code"
     task: "coding"
     enabled: true
     priority: 1
@@ -68,6 +69,16 @@ backends:
     workdir_flag: "--dir"
     model: "opencode-go/minimax-m3"  # alt: opencode-go/glm-5.1
     task: "python"
+    enabled: true
+    priority: 1
+    needs_pty: false
+
+  - name: "opencode-archi"  # complex: architecture, brainstorming
+    command: "opencode"
+    args: 'run "$(cat {prompt_file})"'
+    workdir_flag: "--dir"
+    model: "opencode-go/glm-5.2"
+    task: "architecture"
     enabled: true
     priority: 1
     needs_pty: false
