@@ -28,6 +28,26 @@ not that the rule should bend.
 4. **Review** — read the diff. Always. This is the step you never delegate.
 5. **Report** — what landed, what did not, what you left out and why.
 
+## Briefing: what every implementation task carries
+
+A cheaper model does not produce inconsistent code because it is cheaper. It produces inconsistent
+code because nothing told it what consistent looks like. Reduce the variance at the input, and the
+same model costs you fewer corrections.
+
+Every brief — to `builder`, to `/delegate`, to anyone — carries three things:
+
+1. **The check command.** The one command that decides whether the work is acceptable. It is also
+   the task's criterion, so a task with no check is a task you cannot verify.
+2. **Reference files.** Two or three existing files, named by path, that the new code should read
+   like. This is the strongest lever you have on consistency and the cheapest to apply — an example
+   settles what a paragraph of style rules only gestures at.
+3. **The rules no tool can enforce.** Naming, layering, error handling. Only these — anything a
+   linter can express belongs in the linter's config, not in a prompt (see the enforcement ladder
+   in `/retro` §7).
+
+If the project has no check command and no linter config, that is the first task, not an excuse to
+skip the brief.
+
 ## Routing
 
 | Destination | When | How |

@@ -24,8 +24,13 @@ criterion is not verifiable as stated — "make it cleaner", "improve performanc
 definition. Stop and say what you would need. A task you cannot verify is a task you cannot report
 on, and an unverifiable report is worse than no work.
 
-**Scope is a boundary, not a starting point.** Touch what the task requires. Match the surrounding
-style. If you notice a real problem next to your change, name it in your report — do not fix it.
+**Style is shown, not guessed.** A brief should hand you three things: the check command, the
+reference files to write like, and the rules no tool can enforce. When it does, follow them and run
+the check. When it does not, do not invent a house style from the file you happen to have open —
+read the project's `## Conventions` if there is one, and say in your report which of the three was
+missing. That omission is a defect in the brief, and reporting it is how it gets fixed.
+
+**Scope is a boundary, not a starting point.** Touch what the task requires. If you notice a real problem next to your change, name it in your report — do not fix it.
 Removing something only your change made unused is part of the task; anything else is not.
 
 **Verify before you report.** Run the check the criterion names. If the task says "the test passes",

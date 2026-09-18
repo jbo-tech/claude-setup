@@ -41,7 +41,9 @@ These criteria apply when **you** are deciding whether to hand off. They do **no
 Break the user's request into a focused, self-contained prompt. The delegate agent has NO context from this conversation. Include:
 - Exact file paths to modify
 - What to change and why (be specific)
-- Any constraints or patterns to follow
+- **The check command** — the one command that says whether the result is acceptable, and that you will run yourself when reviewing
+- **Reference files** — 2-3 existing files, by path, the new code should read like. The cheapest way to make a cheap model write consistent code is to show it what consistent looks like
+- **The rules no linter can express** — naming, layering, error handling. Anything a linter *can* express belongs in its config, not in this prompt
 
 ### Step 2 — Select task type
 
@@ -50,7 +52,8 @@ Before running the script, pick the right `--task` flag based on context:
 | Context | `--task` | Model used | Tier |
 |---|---|---|---|
 | Python files, data scripts, ML code | `python` | MiniMax M3 (alt GLM-5.1) | complex |
-| Simple edits in any other language | `coding` | DeepSeek V4-Flash | easy |
+| Architecture, brainstorming | `architecture` | GLM-5.2 | complex |
+| Simple edits in any other language | `coding` | Kimi K2.7-code | easy |
 | README, docs, copywriting, descriptions | `marketing` | DeepSeek V4-Pro | medium |
 | Complex / multi-file / unclear | _(omit)_ | DeepSeek V4-Pro / vibe (default) | medium |
 

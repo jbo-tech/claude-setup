@@ -126,7 +126,18 @@ Format for inferred decisions:
 [Detect from config files and code]
 
 ## Conventions
-[Infer from existing code style, or set defaults]
+[Three things, in this order. Detect them — do not invent them.]
+
+**Check**: [the one command that says whether the code is acceptable — `ruff check . && pytest`,
+`npm run lint && npm test`. Detect it from pyproject.toml / package.json / Makefile. If the project
+has none, say so plainly rather than inventing one.]
+
+**Reference files**: [2-3 existing files that show how this project writes code. Pick the ones you
+would be happy to see copied. These do more for consistency than any prose below.]
+
+**Rules a tool cannot enforce**: [only what the formatter and linter cannot express — naming,
+layering, error handling, what belongs in which module. If the linter already covers it, do not
+repeat it here: configure the linter instead. Keep this to a handful of lines.]
 
 ## Context
 When relevant, read:
