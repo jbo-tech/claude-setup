@@ -63,12 +63,10 @@ find "$HOME/.claude/commands" "$HOME/.claude/agents" -maxdepth 1 -type f \
 means `penpot-*.md`, shipped by the Penpot AI kit. Any other plain file is a personal command or
 agent that git has never seen: `install.sh` will not link it, and a machine change loses it.
 
-> **Known open finding (2026-09-17):** `(b)` returns four personal commands —
-> `worktree-setup`, `worktree-merge`, `git-pr`, `history`. They work and appear in the slash menu;
-> they are simply not in the repo. The fix is to move the file into `claude/commands/`, re-run
-> `install.sh`, then re-run this check and see it become a symlink — `decompose` went through
-> exactly that on 2026-09-17 and is no longer in the list. Not yet arbitrated: whether the
-> remaining four are wanted. See `reference.md` → Drift.
+> **Settled 2026-09-17:** `(b)` used to return five personal commands. All are now in the repo and
+> linked, so `(b)` should return **only** the six third-party `penpot-*.md`. Anything else in that
+> list is a new stray — move it into `claude/commands/`, re-run `install.sh`, re-run this check and
+> confirm it became a symlink.
 
 *Traces:* `/tmp/cs-check/parity-missing.txt`, `/tmp/cs-check/parity-strays.txt`
 
@@ -107,6 +105,37 @@ describing another project's infrastructure — must be removed before any commi
 someone read the diff.
 
 *Trace:* `/tmp/cs-check/settings-foreign-paths.txt`
+
+### A.3b Hooks — do they actually fire?
+
+A hook is a declaration, and this repo has now been bitten three times by a declaration that is
+never executed. `settings.json` shipped `"matcher": "Write(*.py)"` for two months: a *path pattern*
+in a field that matches **tool names**. It matched nothing. The hook never ran once, while
+`README.md` advertised automatic Python formatting and `install.sh` warned when `ruff` was missing.
+
+Two checks. The first is shape, the second is behaviour — only the second proves anything.
+
+```bash
+# (a) the matcher is a tool-name pattern, and the command survives the payload it will receive
+jq -r '.hooks.PostToolUse[] | "\(.matcher)\t\(.hooks[].command)"' claude/settings.json
+
+printf 'x = {  "a":1 }\ndef  f( a ):\n    return   a\n' > /tmp/cs-check/hook-probe.py
+echo '{"tool_input":{"file_path":"/tmp/cs-check/hook-probe.py"}}' \
+  | jq -r '(.tool_response.filePath // .tool_input.file_path) // empty' \
+  | while read -r f; do case "$f" in *.py) ruff check --fix --quiet "$f"; ruff format --quiet "$f";; esac; done
+cat /tmp/cs-check/hook-probe.py
+```
+
+**What to look at.** `(a)` must print a matcher made of tool names (`Write|Edit`), never a
+parenthesised path pattern — and the probe file must come back reformatted (`x = {"a": 1}`). If it
+does not, the command is broken regardless of the matcher.
+
+**(b) The real proof needs a session** — the pipe test above only shows the command works, not that
+Claude Code runs it. In a session, write a misformatted `.py` file with the Write tool and read it
+back. It must come back formatted. This is the only check that covers the whole path, and it is why
+this step also appears in §B.
+
+*Trace:* `/tmp/cs-check/hook-probe.py`
 
 ### A.4 Installer dry run
 

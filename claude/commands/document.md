@@ -112,7 +112,8 @@ protocol in the reference, do not restate the component's surface in the protoco
 ## Don't proliferate documents
 
 Multiplying docs is counter-productive — the maintainer must always know which file is
-authoritative. This command **owns exactly two files** and never spawns parallels:
+authoritative. This command **owns a fixed set of files** — two always, a third when the project
+warrants it — and never spawns parallels:
 
 1. **Fixed namespace, updated in place.** Only ever write/overwrite `docs/architecture.md`,
    `docs/reference.md` and — when it is warranted — `docs/test-protocol.md`. Re-running regenerates

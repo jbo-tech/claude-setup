@@ -142,11 +142,19 @@ cross-project/global. Never infer scope silently — the user confirms each prom
 
 ### 8. Docs freshness — flag only (do NOT rewrite)
 
-If `docs/architecture.md` exists with a `generated_from_commit` front-matter stamp, compare it
-to HEAD **excluding the docs themselves** (a doc isn't stale because it was committed):
-`git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'`. If meaningful code changed since, flag that
-the orientation docs may be stale and suggest running `/document`. Never regenerate them here —
-regeneration is `/document`'s job and stays an explicit choice. Skip silently if no such docs.
+If `docs/architecture.md` exists with a `generated_from_commit` front-matter stamp, check **both**
+sources of drift — a doc goes stale on uncommitted work just as surely as on committed work, and
+checking only commits stays silent exactly when a long session makes the docs stale:
+
+```bash
+git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'   # committed since the stamp
+git status --porcelain -- . ':(exclude)docs/'          # never committed at all
+```
+
+Exclude the docs themselves from both (a doc isn't stale because it was committed). If either
+reports meaningful code, flag that the orientation docs may be stale and suggest running
+`/document`, naming which of the two fired. Never regenerate them here — regeneration is
+`/document`'s job and stays an explicit choice. Skip silently if no such docs.
 
 ## Output format
 

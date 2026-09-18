@@ -39,12 +39,13 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Write(*.py)",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "RUFF_BIN=$(command -v ruff || echo \"$HOME/.local/bin/ruff\"); [ -x \"$RUFF_BIN\" ] && \"$RUFF_BIN\" check --fix --quiet \"$CLAUDE_FILE_PATH\" 2>/dev/null; [ -x \"$RUFF_BIN\" ] && \"$RUFF_BIN\" format --quiet \"$CLAUDE_FILE_PATH\" 2>/dev/null; true",
-            "timeout": 10
+            "command": "jq -r \"(.tool_response.filePath // .tool_input.file_path) // empty\" | while read -r f; do case \"$f\" in *.py) RUFF_BIN=$(command -v ruff || echo \"$HOME/.local/bin/ruff\"); if [ -x \"$RUFF_BIN\" ]; then \"$RUFF_BIN\" check --fix --quiet \"$f\" 2>/dev/null; \"$RUFF_BIN\" format --quiet \"$f\" 2>/dev/null; fi ;; esac; done",
+            "timeout": 10,
+            "statusMessage": "ruff format"
           }
         ]
       }
