@@ -32,6 +32,12 @@ For every technical choice, explain:
 - State assumptions explicitly. If uncertain, ask.
 - If multiple approaches exist, present them — don't pick silently.
 - If something is unclear, stop and ask.
+- A file that is a source of truth must reject what it does not understand.
+  Configuration schemas, parsers and loaders should fail loudly on an
+  unknown key — a typo, or a field added by hand but never wired in — never
+  accept and silently discard it. Permissive defaults (pydantic's
+  `extra="ignore"`, JSON parsers, YAML loaders) turn a human's edit into a
+  no-op with green tests.
 
 ### Simplicity first
 - Minimum code that solves the problem. Nothing speculative.
@@ -80,6 +86,8 @@ For every technical choice, explain:
 When the user invokes `/delegate` explicitly, the decision is made — delegate, don't re-decide and don't do the task yourself. Refuse only on a hard blocker (no backend available, or the task needs an MCP tool the delegate agent can't call), and say so rather than handling it silently.
 
 When `.claude/delegate-auto` exists in the project root, delegate ALL implementation tasks automatically. Do not ask — decompose, delegate, and review.
+
+Commit the user's uncommitted work before delegating anything that touches the same files. A delegated agent starts from the last commit, not from the working tree: it cannot see edits made by hand, and merging its result can silently overwrite them.
 
 Always review the `git diff` after delegation — delegation hands off execution, not judgment.
 
