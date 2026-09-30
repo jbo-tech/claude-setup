@@ -28,8 +28,8 @@ To understand the system, read in this order:
 1. **`install.sh`** — the heart. It decides *what* gets linked where and *how* (symlink vs copy).
    Understand `FILE_DIRS`, `DIR_DIRS`, `ROOT_FILES`, and the manifest, and you understand the whole
    distribution model.
-2. **`claude/CLAUDE.md`** — the always-loaded behavioral contract (preferences, delegation rules,
-   role personalities). This is the only file loaded into *every* session's context.
+2. **`claude/CLAUDE.md`** — the always-loaded behavioral contract (preferences, writing rules,
+   delegation rules). This is the only file loaded into *every* session's context.
 3. **`claude/agents/`** — six personas in three families. Read `orchestrator.md` and `builder.md`
    together: they are the one place where a rule in `CLAUDE.md` is turned into a *mechanism*.
 4. **`claude/commands/`** — the slash commands (explicit, user-invoked workflows). Start with
@@ -104,7 +104,7 @@ picking where it lives. This table is that ladder applied backwards, to rules th
 |---|---|
 | `install.sh` | Symlink commands/agents/scripts/skills + `CLAUDE.md`/`settings.json` into `~/.claude`; **copy** `delegate.yaml` into `~/.config/claude-code/`; warn on missing external skill dependencies; record every link in a TSV manifest; back up conflicts. |
 | `uninstall.sh` | Reverse the install using the manifest — remove only what we created, only if untouched. |
-| `claude/CLAUDE.md` | Always-loaded global preferences: language, problem-solving, code style, **delegation rules**, role personalities, plus the vendored Penpot AI kit block (installer-generated — never edit between its markers). |
+| `claude/CLAUDE.md` | Always-loaded global preferences: language, problem-solving, code style, communication and writing rules, **delegation rules**, plus the vendored Penpot AI kit block (installer-generated — never edit between its markers). |
 | `claude/commands/*.md` (12) | Slash commands — explicit, user-invoked workflows (scope, explore, decompose, audit, bootstrap, document, the delegate quartet, git-commit, retro). Six were deleted 2026-09-18 as natively covered; **`/audit` was restored 2026-09-30** once usage counters showed 28 lifetime invocations, narrowed to the three axes `/code-review` does not carry. |
 | `claude/skills/*/` (7) | Domain expertise, loaded on relevance **in theory** — measured 2026-09-30, automatic routing effectively never fires here, so treat a skill as a library an invocable command points at, not as something that arrives on its own (agent-builder, creative-direction, data-engineering, infra-containers, provider-keys, safe-penpot-writes, security-review). |
 | `claude/agents/*.md` (6) | Personas in three families — see below. |

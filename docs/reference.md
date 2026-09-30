@@ -258,9 +258,10 @@ for the mental model.
 
 ### claude/CLAUDE.md
 - The only **always-loaded** file. Sections: language rules (French conversation default, English
-  code), problem-solving, decision framework, code style, surgical-changes principles,
+  code), problem-solving, code style, surgical-changes principles, communication and
+  plain-writing rules,
   **Delegation** (explicit `/delegate` overrides the gate; auto-mode via `.claude/delegate-auto`;
-  skip criteria must be verifiable), role personalities.
+  skip criteria must be verifiable).
 - **Two trailing sections added 2026-08:** `## Penpot — local complement` (locally authored: declares
   `safe-penpot-writes` as an addition to whatever the Penpot router picked, since the router's rule 3
   says "pick exactly ONE"), then the vendored `<!-- penpot-ai-kit:begin/end -->` block.
