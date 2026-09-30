@@ -58,5 +58,19 @@
   },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
+  },
+  "remoteControlAtStartup": true,
+  "skillOverrides": {
+    "penpot-document-handoff": "name-only",
+    "penpot-design-to-code-review": "name-only",
+    "penpot-design-md": "name-only",
+    "penpot-rename-layers": "name-only",
+    "penpot-build-from-code": "name-only",
+    "penpot-foundations": "name-only",
+    "penpot-migrate": "name-only",
+    "penpot-component-factory": "name-only",
+    "penpot-audit-tokens": "name-only",
+    "penpot-build-screen": "name-only",
+    "penpot-audit-accessibility": "name-only"
   }
 }

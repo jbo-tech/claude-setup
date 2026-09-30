@@ -1,6 +1,7 @@
 ---
 name: infra-containers
-description: Best practices for open-source containerization, orchestration, storage and deployment. Activates when the user mentions "Dockerfile", "docker compose", "podman", "kubernetes", "k8s", "k3s", "container", "deploy", "healthcheck", "image", "orchestration", "systemd", "kestra", "CI/CD", "monitoring", "minio", "rclone", "homelab", "edge". Do NOT use for pure security questions (use security-review). For managed PaaS (Vercel, Render, Fly.io, AWS-specific services), defer to platform-specific skills.
+description: Reviewing or writing a Dockerfile, a compose file, a k8s manifest or a systemd unit for a self-hosted deployment — healthchecks that prove readiness rather than an open port, volume placement, log limits, pinned images, resource caps.
+paths: "**/Dockerfile*, **/*.dockerfile, **/docker-compose*.y*ml, **/compose*.y*ml, **/k8s/**, **/*.service"
 ---
 
 # Infrastructure & Containers

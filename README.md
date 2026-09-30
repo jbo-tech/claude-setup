@@ -49,7 +49,7 @@ CLAUDE_HOME=/path/to/.claude ./install.sh
 
 ### Ruff (Python formatting hook)
 
-The `settings.json` ships a hook that runs `ruff format` after Python file edits. The installer warns if `ruff` is not in `PATH`, but does not install it for you.
+The `settings.json` ships a hook that runs `ruff check --fix` and `ruff format` when a `.py` file is written or edited **through the Write or Edit tool** — a `cat > file.py` from the shell does not trigger it. The installer warns if `ruff` is not in `PATH`, but does not install it for you.
 
 **With pipx (recommended)**
 
@@ -89,7 +89,7 @@ claude/
 
 ## Commands
 
-Eleven commands, deliberately. Anything Claude Code now does natively was removed rather than
+Twelve commands, deliberately. Anything Claude Code now does natively was removed rather than
 wrapped — see [What was removed, and where it went](#what-was-removed-and-where-it-went).
 
 | Command | Description |
@@ -97,6 +97,7 @@ wrapped — see [What was removed, and where it went](#what-was-removed-and-wher
 | `/scope` | Entry point — what, why, and the success criteria |
 | `/explore [tag]` | Exploration (tags: `technical`, `architecture`, `business`, `user`) |
 | `/decompose` | Break a scope into vertical slices — thin foundation first, then parallel slices |
+| `/audit` | Audit existing code — security, homogeneity, maintainability (the axes `/code-review` does not cover) |
 | `/bootstrap` | Initialize project context (`.claude/context/` + CLAUDE.md) |
 | `/document` | Generate orientation docs (architecture + reference, plus a test protocol when warranted) |
 | `/delegate [--task <type>]` | Delegate a coding task to a cheaper agent CLI |
@@ -140,7 +141,7 @@ ran more than an hour** — it is the only step that makes the setup improve ins
 | **Quick fix** | none | code; `/code-review` if it touches anything sensitive | `/git-commit` |
 | **A feature** | `/scope` | code, or `/delegate` when the task is bounded | `/git-commit` → `/retro` |
 | **A new project** | `/scope` → `/decompose` | foundation in the main session, then slices in parallel | `/git-commit` → `/retro` |
-| **Taking over an existing codebase** | `/document` to understand, then `/bootstrap` | whatever it turns up | `/retro` |
+| **Taking over an existing codebase** | `/document` to understand, then `/bootstrap` | `/audit` on the parts you will have to change | `/retro` |
 | **Exploration / R&D** | plan mode, or `/explore` | conversation, domain agents | `/retro` |
 | **Data / ML** | `/scope` | the `data-engineering` and `ml-review` skills route themselves | `/retro` |
 | **This framework** | — | `docs/test-protocol.md` §A | `/document` → `/retro` |
@@ -162,8 +163,10 @@ claude --agent orchestrator     # no Write/Edit — it cannot implement, by cons
  5. per slice               builder (its own worktree, created and cleaned for you)
                             or /delegate (cheaper CLI, no worktree)
  6. read the diff           always, and never delegated
- 7. /code-review            the diff; the security-review skill fires on its own when
-                            the change touches input, auth or secrets
+ 7. /code-review            the diff — correctness and cleanup
+    /audit                  the state — security, homogeneity, maintainability, when the
+                            slice touches input handling, auth or secrets. Skills do NOT
+                            fire on their own (measured); /audit is what reaches them
  8. /git-commit [pr]
  9. /document               only if the architecture actually moved
 10. /retro                  defects → ledger → rules, at the right level
@@ -179,7 +182,7 @@ is where each went:
 
 | Removed | Use instead |
 |---|---|
-| `/audit` | `/code-review` (native) for bugs and cleanup; the **`security-review` skill** for the security axis, which `/code-review` does not cover |
+| `/audit` | **restored 2026-09-30, narrowed.** Deleting it was the one mistake of that round: usage counters later showed 28 invocations, 7th of the whole history. `/code-review` is narrower on two axes — it reviews a *change*, not *state*, and covers correctness and cleanup, not security, homogeneity or maintainability. The new `/audit` owns exactly those three and defers the rest |
 | `/audit-ml` | the **`ml-review` skill** — same four checks (leakage, validation, reproducibility, serving), and it routes on the words of the subject instead of waiting to be named |
 | `/audit-accessibility` | the `web-design-guidelines` and `impeccable` skills |
 | `/worktree-setup`, `/worktree-merge` | `builder` runs under `isolation: worktree` — created, merged and cleaned automatically. `EnterWorktree` is native for a single session |
@@ -225,12 +228,23 @@ start of a session: a restricted agent must not read `(Tools: All tools)`.
 
 | Skill | Description |
 |-------|-------------|
-| `agent-builder` | Create specialized agents |
-| `creative-direction` | Naming, branding, creative direction workflow |
-| `data-engineering` | Open-source data pipelines (DuckDB, Parquet, Kestra, MinIO) |
-| `infra-containers` | Open-source containerization (Docker, Podman, K3s, Kestra) |
+| `agent-builder` | Create specialized agents — and the harness traps that make one silently powerless |
+| `creative-direction` | Naming, brand identity, tone of voice — the method, usable without the `creative-director` agent |
+| `data-engineering` | Ingestion and transform steps that must be safe to replay: idempotent writes, deterministic ids, DuckDB/Parquet layout |
+| `infra-containers` | Dockerfiles, compose files, k8s manifests, systemd units — scoped by `paths` to those file types |
+| `provider-keys` | Centralized LLM provider key management (XDG config, `.env.example`, install section) |
 | `safe-penpot-writes` | Read-back discipline for the Penpot plugin API — the writes that fail silently ⚠ |
-| `security-review` | Security best practices for code and infrastructure |
+| `security-review` | The security checklist `/code-review` does not carry — application code and infrastructure |
+
+**Seven, down from eight.** The `delegate` skill was folded into the `/delegate` command on
+2026-09-30: it existed only to trigger on relevance, and measurement showed that never happens here
+(see below). Its body — task routing, usage tracking, the briefing contract, the scope-lock rule —
+now lives in the command, which is the half that was actually used.
+
+**Two are scoped rather than broad.** `infra-containers` carries a `paths` glob so it only activates
+on container and unit files; `data-engineering` could not be scoped that way — pipeline code is
+ordinary Python under any layout — so its description was narrowed instead, to the one failure it
+really knows (a step that is not safe to replay).
 
 ⚠ **External dependency.** `safe-penpot-writes` complements the [Penpot AI kit](https://github.com/penpot/penpot-ai-kit)
 rather than duplicating it: the kit's `penpot-*` skills know *what* to build, this one knows *how a
@@ -259,7 +273,7 @@ This setup is **intentionally minimal**. Many workflows are already covered by p
 | Designing in Penpot | `safe-penpot-writes` (the write path only) | `penpot-ai-kit` (`penpot-*`, 12 skills) |
 | Delegate to cheaper models | `/delegate` + `/delegate-on` | `vibe-skill` (Mistral Vibe) |
 
-What this setup **adds** : the `/scope` → `/decompose` handoff with structured success criteria and vertical slicing, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), open-source-focused `data-engineering` and `infra-containers` skills, the `creative-director` agent, and `safe-penpot-writes` — the one Penpot concern the official kit
+What this setup **adds** : the `/scope` → `/goal` handoff with structured success criteria, auto-delegation to task-specialized cheaper models via `/delegate` (5 backends, automatic `--task` routing), open-source-focused `data-engineering` and `infra-containers` skills, the `creative-director` agent, and `safe-penpot-writes` — the one Penpot concern the official kit
 does not cover. Everything else is delegated.
 
 ### Recommended companions
@@ -301,8 +315,16 @@ The previous `context-bar.sh` (bash/jq) is still available — switch in `settin
 ### settings.json
 
 - **Model**: opus
-- **Permissions**: git, python, pytest, ruff, make, docker, uv, pip, npm, gh
-- **Ruff hook**: automatic formatting of Python files after write
+- **Permissions**: 16 allow rules (git, python, pytest, ruff, make, docker, uv, pip, npm, gh…),
+  14 deny rules (`.env` and secret paths, `rm -rf`, `sudo`, `chmod 777`)
+- **Ruff hook**: `ruff check --fix` then `ruff format`, on a **`Write` or `Edit`** of a `.py` file.
+  The matcher reads the tool name and the path comes from the hook's stdin JSON — it was
+  `"Write(*.py)"` until 2026-09-18, a path pattern in a field that matches tool names, so it had
+  never fired once. `docs/test-protocol.md` §A.3b is the check that would have caught it.
+- **`skillOverrides`**: eleven `penpot-*` skills set to `name-only` (2026-09-30). They stay in the
+  `/` menu and stay invocable; only their description leaves the always-loaded listing, which was
+  ×1.9 over its budget and is now ×0.60. `penpot-router` deliberately keeps its description — the
+  Penpot block in `CLAUDE.md` names it as the dispatcher. Re-check with §A.3c after a kit update.
 - **Status line**: `statusline.py` with 60s refresh interval
 
 ## License

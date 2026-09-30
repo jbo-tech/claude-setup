@@ -1,6 +1,6 @@
 ---
 name: creative-direction
-description: Creative direction workflow for naming, branding, and concept development. Automatically engages creative thinking modes. Triggers on "brainstorm", "find a name", "help me name", "naming ideas", "brand identity", "tagline", "tone of voice", "creative direction", "need ideas for", "what should I call".
+description: Naming, brand identity, tone of voice, taglines, concept development — the working method, not the reviewer. Applies in an ordinary session without mobilising the creative-director agent — use it whenever the task is to generate and narrow creative options.
 ---
 
 # Creative Direction

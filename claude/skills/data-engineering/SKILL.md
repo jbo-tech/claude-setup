@@ -1,6 +1,6 @@
 ---
 name: data-engineering
-description: Best practices for open-source data pipelines, ETL/ELT, data quality and storage. Activates when the user mentions "pipeline", "ETL", "data quality", "parquet", "duckdb", "kestra", "minio", "ingestion", "orchestration", "data pipeline", "schema validation", "idempotent". Do NOT use for machine learning or statistical analysis (use the ml-review skill). For managed/commercial stacks (Snowflake, Databricks, dbt Cloud, Airflow on Astronomer), defer to astronomer-data plugin if available.
+description: An ingestion or transform step that must be safe to replay — re-running duplicates rows, leaves orphans, or silently changes its own output. Covers idempotent writes, deterministic ids, partition and file layout for DuckDB/Parquet, and schema drift at the boundary.
 ---
 
 # Data Engineering
