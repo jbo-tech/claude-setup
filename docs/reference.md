@@ -5,9 +5,14 @@ read from `.claude/context/decisions.md` + `status.md`. See [`architecture.md`](
 for the mental model.
 
 > Note: `.claude/` is git-ignored, so the intent record (`decisions.md`) is local scratch, not
-> tracked history. Unlike previous generations, the untraced items below are **not** pending-`/retro`
-> artifacts that will clear themselves — each is a real gap between the repo, the installed tree and
-> the recorded decisions, and each needs a call.
+> tracked history.
+>
+> **This generation is the first with no open drift.** The three items that stood here on
+> 2026-09-17 were all closed within a day, which is worth reading carefully rather than
+> celebrating: all three had been found by comparing the *installed* tree and the recorded
+> decisions against the repo — never by reading the repo alone — and none is structurally
+> prevented from recurring. What the list now holds is **debt**: compromises the code carries on
+> purpose, including four created this week by the very mechanisms meant to reduce it.
 
 ## Drift — to arbitrate
 
@@ -15,147 +20,210 @@ for the mental model.
 - None open.
 
 **Code diverged from a recorded decision**
-- ✅ **`document.md` contradicted itself in one paragraph.** *Closed 2026-09-17* — the sentence now
-  reads "owns a fixed set of files — two always, a third when the project warrants it", which is
-  what the numbered rule below it already said.
+- None open. *(The `document.md` self-contradiction closed 2026-09-17.)*
 
 **Significant choices with no traced decision** (silent drift)
-- ✅ **Personal commands living outside the repo.** *Closed 2026-09-17.* All five were repatriated;
-  `~/.claude/commands/` now holds only the six third-party `penpot-*.md`, which is exactly what
-  [`test-protocol.md`](test-protocol.md) §A.1 expects. Four of the five were then **deleted** the
-  next day (below) — the repatriation was still the right move: it is what made them visible enough
-  to judge.
-- ✅ **`delegate.yaml` divergence.** *Closed 2026-09-17, repo ← installed.* The installed copy was
-  the intent and won: `vibe`/`opencode` priorities swapped (opencode first), three models re-pointed
-  (`qwen3.7-max`, `kimi-k2.7-code`, `glm-5.2`), and a fifth backend added — `opencode-archi`,
-  `task: architecture`, on `glm-5.2`, for architecture and brainstorming work. The "copy, not
-  symlink" design is unchanged, so this will drift again; §A.2 is the check that catches it.
+- None open. The two that stood here for weeks — five personal commands living outside the repo,
+  and `delegate.yaml` diverging from its installed copy — both closed 2026-09-17, and both are now
+  covered by a mechanical check ([`test-protocol.md`](test-protocol.md) §A.1 and §A.2). Neither is
+  structurally prevented: the first recurs whenever a file is created directly in `~/.claude/`, the
+  second whenever the copied config is edited on either side.
 
 **Known debt**
+- ⚠ **debt: `delegate.sh` reports its own exit code, not the backend's.** The wrapper returns 0
+  while the backend exits **124**. Twice observed — 2026-07-11 (kimi-k2.7-code, 120s) and
+  2026-09-17 (minimax-m3, 600s, ten minutes for zero files). The code is logged faithfully in
+  `delegate-runs.jsonl`; nothing looks at it at the moment it matters. *Now countable:*
+  `extract-defects.py` reports non-zero delegations. *Cost:* a timed-out delegation reads as a
+  successful empty one until someone runs `git status`. → *File:* `claude/scripts/delegate.sh`.
+  *Question:* propagate the backend's code, or keep the wrapper's and rely on the report?
+- ⚠ **debt: Vibe `-p` is a no-op on this machine.** Vibe in programmatic mode returns 0 tokens and
+  0 files without calling the model (likely auth or quota). The tracker logs the 0 faithfully, so
+  the run looks "successful but empty". Not a tracking bug. → *File:* external (Vibe).
+- ⚠ **debt: `settings.json` is shared by every project and this repo is public.** It is symlinked
+  to `~/.claude/settings.json`, so anything written at user level lands here. On 2026-09-16 an
+  `autoMode.environment` block describing another project arrived that way and was caught only by
+  reading the diff before committing. §A.3 greps for foreign paths, but only when someone runs it.
+  *Cost:* the next one is caught the same way, by a person who happens to look. → *File:*
+  `claude/settings.json`. *Question:* a `pre-commit` refusing this file when it names a path
+  outside the repo — rung 2 of the enforcement ladder — or keep relying on diff discipline? **This
+  is the oldest open decision in the list.**
+- ⚠ **debt: the briefing contract is unmeasured.** `orchestrator`/`builder`/`bootstrap`/the
+  delegate skill now require every brief to carry a check command, reference files and the
+  non-mechanical rules. Whether that actually reduces correction rates is unknown — the claim comes
+  from a workshop REX, not from this repo. *Measurement:* defects per delegation, via
+  `extract-defects.py`, over the next few sessions. → *Files:* `claude/agents/orchestrator.md`,
+  `claude/agents/builder.md`.
+- ⚠ **debt: `extract-defects.py` is a net, not a blanket.** It sees failed spawns, respawned tasks
+  and non-zero delegations. A wrong answer accepted on the first try is invisible to it, and a
+  background subagent leaves only a launch acknowledgement in the transcript. Documented in its own
+  docstring. *Re-evaluate after three retros:* if it surfaces nothing usable, remove it rather than
+  widen it. → *File:* `claude/scripts/extract-defects.py`.
 - ⚠ **debt: `storage` persistence across `execute_code` calls is unmeasured.**
-  `verifyPersistence.js` carries its baseline between two calls through a `storage` object. Nothing
-  confirms that object survives. *Partly mitigated 2026-08-29:* the dependency line now lists the
-  real five-function surface, and part B returns `baselineLost: true` with a stray count instead of
-  the naive `revn > undefined` comparison, which reported a healthy session as unpersisted.
-  *Remaining cost:* the pre-flight is unusable across two separated calls until the behaviour is
-  confirmed with `penpot_api_info` — run part A and part B back to back meanwhile. → *File:*
+  `verifyPersistence.js` carries its baseline between two calls through a `storage` object; nothing
+  confirms that object survives. *Partly mitigated 2026-08-29:* part B now returns
+  `baselineLost: true` with a stray count instead of a naive `revn > undefined` comparison.
+  *Remaining cost:* unusable across two separated calls until confirmed with `penpot_api_info`;
+  run part A and part B back to back meanwhile. → *File:*
   `claude/skills/safe-penpot-writes/scripts/verifyPersistence.js`.
-- ✅ **debt: the staleness flag was blind to uncommitted work.** *Closed 2026-09-17* — `/retro` §8
-  now runs `git status --porcelain` alongside the commit diff and names which of the two fired.
-  The original entry, kept for the reasoning:
-- ⚠ ~~**debt: the staleness flag is blind to uncommitted work.**~~ `/retro` step 8 runs
-  `git diff --stat <stamp>..HEAD -- . ':(exclude)docs/'`. It fires correctly when work has been
-  committed — it did on 2026-09-16, naming four files. It stayed silent on 2026-08-30 with six files
-  dirty and none committed. The mechanism is correct for its stated job (flagging drift across
-  commits) and silently wrong for how this repo is often used (a full session of work before a single
-  commit). *Cost:* the one automated signal that these docs went stale is absent exactly when a long
-  session makes them stale. → *Files:* `claude/commands/retro.md` §8,
-  `docs/architecture.md` front-matter. *Question:* compare against the working tree
-  (`git status --porcelain` alongside the commit diff), or accept the limit and rely on running
-  `/document` deliberately?
 - ⚠ **debt: failure mode #8 is reported, not measured.** `remove()` on a component descendant is
-  said to hide rather than delete. It is documented with that caveat stated in the text and a probe
-  (`scripts/verifyRemoval.js`) that settles it, but the skill's contract is *"each measured on a
-  real file"* and this one is not. *Cost:* one entry in an eight-entry list carries a weaker
-  warrant than the rest; leaving the label off would have been worse. → *File:*
+  said to hide rather than delete. The skill's contract is *"each measured on a real file"* and this
+  one is not — it carries the label and a probe that settles it. → *File:*
   `claude/skills/safe-penpot-writes/SKILL.md` §8.
 - ⚠ **debt: usage-tracking correlation is timestamp-based.** `delegate-parse-session.py` matches a
-  run to a backend session by *workdir + "most recent session at/after run start"*. Concurrent
-  delegations in the same directory can mis-attribute metrics. Acceptable for sequential use (the
-  normal case); documented in `SKILL.md`. *Cost:* wrong cost line on a run under heavy parallel use.
-- ⚠ **debt: delegations fail silently, in two different ways.** *Widened 2026-09-17.*
-  (a) **Vibe `-p` no-op** — Vibe in programmatic mode returns 0 tokens / 0 files without calling the
-  model (likely auth/quota), so a Vibe delegation looks "successful but empty".
-  (b) **Timeouts read as success** — `delegate.sh` exits 0 while the backend exited **124**. Observed
-  twice: 2026-07-11 (kimi-k2.7-code, 120s, another project) and 2026-09-17 (minimax-m3, 600s, this
-  repo, ten minutes for zero files). The exit code is logged faithfully in `delegate-runs.jsonl`;
-  what is missing is that nothing looks at it at the moment it matters. *Now partly mitigated:*
-  `extract-defects.py` reports non-zero delegations, so the recurrence is at least countable.
-  *Open question:* should `delegate.sh` propagate the backend's exit code instead of its own?
-  → *Files:* `claude/scripts/delegate.sh`, external (Vibe).
-- ⚠ **debt: no automated tests.** The whole framework is validated manually (per the v1 scope's
-  explicit "tests out of scope"). *Cost:* a frontmatter field silently ignored is exactly the class
-  of bug that went unnoticed for six months — and nothing but a person reading the session listing
-  catches it today. The steps live in [`test-protocol.md`](test-protocol.md); this line records only
-  that the gap exists.
-- ⚠ **debt: `settings.json` is shared by every project but receives project-scoped state.** It is
-  symlinked to `~/.claude/settings.json`, so anything written at user level lands in this repo — and
-  this repo is **public on GitHub**. On 2026-09-16 an `autoMode.environment` block describing another
-  project (its paths, its lab containers, its snapshot locations) arrived that way and was caught
-  only by reading the diff before a commit. Removed, never committed. *Cost:* the next one is caught
-  the same way, by a person who happens to look. *Question:* add a `pre-commit` hook refusing this
-  file when it names a path outside the repo, or keep relying on diff discipline?
-  → *File:* `claude/settings.json`. *Recorded in:* `.claude/context/anti-patterns.md`, 2026-09-16.
-- ⚠ **debt: `builder` and `orchestrator` are exercised but not instrumented.** *Superseded
-  2026-09-17.* The pair has run: one session on another project spawned `builder` **ten times**
-  across a phase of setup tasks. That first real run also produced the first real defect — the
-  opening spawn failed with `Cannot create agent worktree: not in a git repository`, because the
-  task was to create the repository skeleton, and the same task needed **four spawns** to land. The
-  root cause is now written into `builder.md`. *Remaining cost:* nothing in the framework noticed.
-  The failure and the three retries sat in a session transcript and reached no ledger, no
-  `anti-patterns.md`, no retro. That is the gap `extract-defects.py` + `/retro` §7 step 1 close;
-  whether they actually close it is unmeasured until a retro runs on a session with defects in it.
-  → *Files:* `claude/agents/builder.md`, `claude/scripts/extract-defects.py`.
+  run to a backend session by workdir plus "most recent session at or after run start". Concurrent
+  delegations in the same directory can mis-attribute metrics. Acceptable sequentially, which is
+  the normal case.
+- ⚠ **debt: no automated tests.** The whole framework is verified by a person, per the v1 scope.
+  *Cost:* a silently-ignored frontmatter field is exactly the class of bug that went unnoticed for
+  six months — three times now. The steps live in [`test-protocol.md`](test-protocol.md).
 
 **Also worth watching (not strict drift)**
-- **A configuration field that is silently ignored has now happened three times.** `allowed-tools:`
-  on three agents (six months, fixed 2026-08-29); five commands never linked because they were
-  created outside the repo (still four open); and — found 2026-09-17 — the `ruff` hook's matcher was
-  `Write(*.py)`, a path pattern in a field that matches **tool names**. It matched nothing, so the
-  hook had never run once, while `README.md` advertised "automatic formatting of Python files after
-  write" and `install.sh` warned when `ruff` was missing. Fixed to `Write|Edit` with the path read
-  from the hook's stdin JSON, and proven by writing a misformatted file and watching it come back
-  formatted. The pattern is stable enough to name: **this framework's characteristic failure is a
-  declaration that looks right and is never executed.** The defence is not more care — it is running
-  the thing once and looking. That is what `test-protocol.md` is for, and it did not cover hooks;
-  it should.
+- **A declaration that looks right and never runs — three instances, and the defining failure of
+  this repo.** `allowed-tools:` on three agents (six months); five commands created directly in
+  `~/.claude/` and never linked; and the `ruff` hook's matcher `Write(*.py)` — a path pattern in a
+  field that matches **tool names** — which meant the hook had never fired once in two months,
+  while `README.md` advertised automatic Python formatting and `install.sh` warned when `ruff` was
+  absent. All three are fixed. The pattern is what matters: **this framework is prose describing
+  behaviour, and prose cannot fail loudly.** The defence is not more care at writing time, it is
+  executing the thing once and reading the result. `test-protocol.md` §A now covers hooks (§A.3b);
+  anything else declarative should get its own step there.
 - **`data-rag-expert` has no paired knowledge skill.** Every other reviewer pairs with one
-  (`infra-expert` ↔ `infra-containers`, `data-ml-expert` ↔ `ml-review`). It is also described as the
-  most-solicited profile. An agent must be invoked; a skill loads on the words of the subject. The
-  2026-08-29 decision records this as a watch item with a concrete trigger: if you find yourself
-  wanting the knowledge inline rather than as a review pass, add the skill.
-- ✅ **Namespace pressure — acted on 2026-09-18.** Commands went 18 → **11**: `/audit`,
-  `/audit-ml`, `/audit-accessibility`, `/worktree-setup`, `/worktree-merge` and `/history` deleted,
-  `/git-pr` folded into `/git-commit pr`. The criterion was not "rarely used" but **"Claude Code
-  now does this natively"** — `/code-review`, `EnterWorktree` plus `builder`'s own worktree
-  isolation, `claude --resume`. Two things are worth keeping in view:
-  (a) **`/code-review` is not a security pass.** It hunts correctness bugs and cleanup. Deleting
-  `/audit` would have dropped the security axis, so it moved into the `security-review` skill,
-  whose description was widened from infrastructure to application code (injection, auth, input
-  validation, secrets). A skill was the better home anyway: a command must be remembered, a skill
-  routes on the words of the subject.
-  (b) **The homogeneity axis moved from cure to prevention.** `/audit` checked style consistency
-  after the fact; the briefing contract (check command + reference files) now supplies it before
-  the code is written. Whether that actually works is unmeasured.
-  Agents stay at **6**. The rule *an artifact with 0 invocations in 60 days is a deletion candidate*
-  still has no counter behind it and has never been applied mechanically — this round was judgment,
-  not measurement. *Question:* build the counter (rung 3), or accept a quarterly prune by hand?
-- **A decision was contradicted three days after it was recorded, and it took two weeks to notice.**
-  The 2026-08-28 decision keeps an *alias* in `settings.json` rather than a pinned model id, because
-  a pin goes stale in silence. `883425e` (2026-09-01) pinned `claude-fable-5[1m]`. By the time it was
-  caught (`fa4cb00`, 2026-09-17) Fable 5.1 had shipped, so the default had been pointing at the
-  previous generation. Nothing detects this class of contradiction except a `/document` run reading
-  `decisions.md` against the code — which is what just happened. Worth knowing the mechanism is
-  *this document*, on demand, and nothing faster.
-- **`claude/CLAUDE.md` now carries vendored third-party content.** The Penpot AI kit block is
-  installer-generated and rewritten in place through the symlink. It is committed on purpose, but it
-  means `git diff` on that file can show changes nobody in this repo wrote.
+  (`infra-expert` ↔ `infra-containers`, `data-ml-expert` ↔ `ml-review`), and this is described as
+  the most-solicited profile. An agent must be invoked; a skill loads on the words of the subject.
+  The trigger recorded 2026-08-29 still stands: if you want the knowledge inline rather than as a
+  review pass, add the skill. The 2026-09-18 pruning strengthens the case — it deleted three
+  commands *in favour of* skills, for exactly this reason.
+- ⚠ **Acted on 2026-09-30, and still not under budget.** The listing went from **36 skills /
+  15 067 characters (×1.9 over)** to **24 / 11 171 (×1.40)** — 974 est. tokens freed per session.
+  Removed: the `delegate` skill (folded into its command), the four `~/.agents` symlinks (vercel ×3,
+  tailwind — 1 lifetime use between them), and seven third-party directories moved to
+  `~/.claude/skills-retirees-20260930/` (`ml-review`, `karpathy-guidelines`, and the Stitch/design
+  cluster). **The remaining overflow is one decision away:** the 12 Penpot skills carry 6 932
+  characters for zero uses in 431 startups. **Applied 2026-09-30, router excluded:** eleven of the
+  twelve are `name-only` in `skillOverrides`; `penpot-router` keeps its full description because the
+  always-loaded Penpot block in `CLAUDE.md` names it as the dispatcher, and `safe-penpot-writes`
+  keeps its own because that block says it adds to whatever the router picked. Final state: **24
+  skills, 4 792 effective characters — ×0.60, under budget with margin**, and 6 379 characters still
+  invocable by name. Path: 15 067 (×1.9) → 11 171 (×1.40) → 4 792 (×0.60).
+  *Maintenance, and it is the real risk:* a kit update that **adds or renames** a `penpot-*` skill
+  escapes the map and takes a full description back, silently. → *Check:*
+  [`test-protocol.md`](test-protocol.md) §A.3c, to be run after every kit update.
+  **§B.3 can now finally be re-run meaningfully** — for the first time the skills under test have
+  their descriptions inside the budget.
+- ⚠ **Two skill descriptions did not parse as YAML, and `claude plugin validate` passed anyway.**
+  Found 2026-09-30 while specialising: a `: ` inside a description value (`…deployment: healthchecks…`,
+  `…agent: use it…`) makes the YAML a mapping and the block invalid. Per the documentation a skill
+  whose frontmatter fails to parse **still loads, with every field dropped** — name falls back to the
+  directory, description to the first line of the body, and `allowed-tools`/`model`/`paths` silently
+  stop applying. Both were self-inflicted, both fixed the same minute, and all 24 loaded skills now
+  parse under a strict YAML reader. *The finding that matters is the tool's:* `claude plugin validate`
+  reported **✔ passed** on the broken file. It is not a sufficient check — the repo's characteristic
+  failure has a new instance, in the very command meant to catch it. → *Check:*
+  [`test-protocol.md`](test-protocol.md) §A should gain a strict YAML parse of every loaded SKILL.md.
+- ⚠ ~~**Only 8 of the 36 skills in `~/.claude/skills/` are ours.**~~ Measured 2026-09-29: the 8 symlinked from this repo carry 3 299 characters of
+  description — **22 %** of the listing; the remaining 78 % belongs to third parties. Of those, 5 are
+  symlinks to `~/.agents/skills/` (a separate source) and **23 are plain directories dropped straight
+  into `~/.claude/skills/`** — 12 from the Penpot kit, plus `impeccable`, `ml-review`,
+  `karpathy-guidelines`, the `stitch-*` and design cluster, `skill-factory`, `find-skills`,
+  `stop-slop`, and the `synced` folder from claude.ai. Those 23 are unversioned, invisible to
+  `install.sh`, and lost on a machine change — **the stray-command failure repeating on the skills
+  axis**, one layer over. They also set the priority of the listing by accident rather than by
+  decision. *Two questions, and they are different:* which of the 28 are still wanted (a namespace and
+  budget call, answerable with `/skill-doctor`), and which deserve versioning somewhere rather than
+  living as loose directories. → *Check:* [`test-protocol.md`](test-protocol.md) §A.1 covers commands
+  and agents only; it does not look at `skills/`, and it should.
+- ⚠ **2026-09-29: skills do not fire — but the diagnosis was wrong, and the remedy is the opposite
+  of deletion.** The documentation names a mechanism that explains every failed run: Claude Code
+  loads a listing of skill names and descriptions capped at **1% of the context window**, and when it
+  overflows it **drops descriptions — starting with the skills you invoke least**, which "removes the
+  keywords Claude needs to match your request". Measured here: **36 personal skills, 15 067
+  characters** of `description` + `when_to_use`, against a default budget of roughly 8 000 characters
+  — **about twice over, before counting plugin and bundled skills.** The three skills that failed to
+  trigger have almost certainly never been invoked, so they are first in line to lose their
+  descriptions. **Claude may never have seen their keywords at all.** Eliminated as a cause:
+  malformed frontmatter (`claude plugin validate ./claude/skills` passes; note that validating
+  `~/.claude/skills` silently skips ours, because 13 entries there are symlinks and it does not
+  follow them). *Authoritative numbers need a session:* `/doctor` reports the listing's context cost
+  and its biggest contributors, `/context` the Skills row after the budget applies, `/skill-doctor`
+  the unused skills. *Remedies, all documented:* raise `skillListingBudgetFraction`; set
+  low-priority entries to `name-only` in `skillOverrides` (the 12 Penpot skills alone carry ~5 800
+  characters and matter only during Penpot work); trim descriptions at the source; add `paths` globs
+  so a skill activates only on matching files. **Deletion is suspended** — three skills were within
+  one decision of being removed on a cause that is probably not theirs.
+- ⚠ ~~**Settled 2026-09-29 over four valid runs: skills do not fire on relevance, and their content
+  would have been a downgrade.**~~ *Superseded above; the measurement stands, the explanation does
+  not.* `data-engineering` on `veilleuse` and on `s3dedup`,
+  `infra-containers` on `veilleuse`, `security-review` on `groovekeeper` — trigger words present
+  **verbatim** each time ("ingestion"; "docker compose"; "pipeline" + "duckdb" + "idempotent"; the
+  subject named outright), correct terrain each time, **no skill loaded once.** And each answer found specific defects no checklist in those skills
+  holds: a compose header contradicting its own README about an abandoned deployment procedure, a
+  healthcheck proving the port rather than readiness, and two reproduced DuckDB bugs — `LIKE` with
+  `_` as a wildcard deleting neighbouring keys from the index, and stale media metadata surviving an
+  ETag change. The sessions investigated the repository and its own docs; general guidance would have
+  produced less. **The criterion follows: a skill earns its place only when it holds knowledge the
+  model does not already have** — measured facts, project quirks, a convention against the default.
+  `safe-penpot-writes` and `agent-builder` qualify (eight measured failure modes of a silently
+  failing API; the `tools:` vs `allowed-tools:` trap). `data-engineering`, `infra-containers` and
+  `security-review` do not, on this evidence — and `security-review` was widened two days earlier
+  *specifically* on the premise that just failed. *Caveats, and the second is load-bearing:* four samples, all on subjects the model handles well in
+  documented repositories, so an obscure-knowledge skill may still be used; and **both security runs
+  were negatives** — nothing shows a session *catching* a real vulnerability as well as a checklist
+  would, only that it correctly clears clean code. `claude plugin eval` with its no-plugin baseline
+  arm is the A/B that would settle it. *Decision pending.* The superseded earlier note follows.
+- ⚠ ~~**Measured 2026-09-25: skills do not fire on relevance.**~~ Two valid runs of [`test-protocol.md`](test-protocol.md) §B.3, both **outcome 2**:
+  no skill was loaded, and the session answered well anyway. The decisive one is
+  `data-engineering` on `veilleuse`, where the trigger word `"ingestion"` appeared **verbatim**, in
+  the right terrain, on a project carrying an explicit idempotence constraint. It still did not load.
+  So the failure is not vocabulary — **matching the description is not sufficient.** A skill is
+  loaded when the model judges it needs guidance, and on a subject it handles it does not reach for
+  one; in `veilleuse` it read the project's own `IMPLEMENTATION.md` instead, which is more specific
+  than any generic skill could be.
+  This cuts both ways, and the second half is the more useful finding: both answers surfaced real
+  defects that **neither skill's checklist contains** — an upsert leaving orphaned points when a
+  document re-chunks into fewer fragments, and an unescaped `file:` URI in three places. The
+  argument for the September pruning ("a skill fires by itself") is false; its *outcome* is fine for
+  a reason nobody tested — there was little there to lose.
+  **The criterion this suggests:** a skill earns its place when it holds knowledge the model does
+  **not** already have — measured facts, project quirks, a convention that runs against the default.
+  `safe-penpot-writes` is the clean case: eight failure modes of an API that fails silently, seven
+  measured on a real file. A skill that restates general good practice will not be invoked, because
+  nothing needs it. *Open:* run `infra-containers` on `veilleuse/deploy` for a third data point, then
+  decide whether `security-review` and `data-engineering` are themselves deletion candidates by
+  their own rule. *Note:* `security-review` was widened only days earlier *specifically* to carry the
+  axis `/code-review` does not cover — that reasoning now needs re-examining, not defending.
+- **The namespace is at 11 commands, and there is still no counter.** 18 → 11 on 2026-09-18, on the
+  criterion "Claude Code does this natively now". The standing rule *an artifact with 0 invocations
+  in 60 days is a deletion candidate* has never once been applied mechanically, because nothing
+  counts invocations. This round was judgment. *Question:* build the counter (rung 3), or accept a
+  prune by hand each quarter?
+- **A decision can be contradicted for two weeks before anything notices.** The 2026-08-28 decision
+  keeps a model *alias* in `settings.json` rather than a pinned id; `883425e` pinned
+  `claude-fable-5[1m]` three days later, and by the time it was caught (2026-09-17) Fable 5.1 had
+  shipped, so the default had been pointing at the previous generation. Nothing detects this class
+  except a `/document` run reading `decisions.md` against the code. The mechanism is *this
+  document*, on demand, and nothing faster.
+- **`claude/CLAUDE.md` carries vendored third-party content.** The Penpot AI kit block is
+  installer-generated and rewritten in place through the symlink, so `git diff` on that file can
+  show changes nobody here wrote. Committed on purpose.
 
 **Docs inventory — does each doc earn its place?**
-- `learning-loop-spec.md` → **keep** (complementary: 199 lines holding the reasoning behind the
-  three axes, the detailed routing matrix, the risks to validate and the out-of-scope list; the
-  40-line operational contract lives in `retro.md` §7 and is authoritative). Status line corrected
-  2026-08-30. The overlap between the two is real: **the open option is pruning the spec down to
-  reasoning + risks**, deferred until the duplication actually misleads someone.
-- `architecture.md`, `reference.md`, `test-protocol.md` → owned/regenerated by `/document`.
-  The protocol is new this run; it is the only one of the three that a reader is expected to *act*
-  on rather than read, and the only one whose content changes without the code changing.
-- No redundant or orphaned docs found. Doc set is sharp.
+- `learning-loop-spec.md` → **keep** (complementary). It holds the reasoning the operational
+  contract does not: the three axes, the enforcement ladder and what it costs, the mechanical
+  defect source, the routing matrix, the risks to validate, the out-of-scope list. `retro.md` §7 is
+  authoritative for behaviour. The overlap is real and the open option — pruning the spec to
+  reasoning + risks only — stays deferred until it actually misleads someone.
+- `architecture.md`, `reference.md`, `test-protocol.md` → owned and regenerated by `/document`.
+  The protocol is the only one a reader is expected to *act* on, and the only one whose content
+  changes without the code changing.
+- No redundant or orphaned docs. The set is sharp.
 
-> **Cleared since the 2026-08-30 generation:** nothing regressed, and the three items closed then
-> (the `delegate.sh` permission, the `learning-loop-spec.md` status line, the `delegate.yaml` tier
-> mapping) stay closed. **Three drift items opened this run** — all three were found by comparing
-> the *installed* tree and the recorded decisions against the repo, not by reading the repo alone.
+> **Since the 2026-09-17 generation:** every drift item then open is now closed — the stray
+> commands, the `delegate.yaml` divergence and the `document.md` contradiction. Nothing regressed.
+> Of the nine debt items, **two were created by this week's own additions** — the briefing contract
+> and the extractor — and both are the same shape: a mechanism shipped with a claim about its
+> effect that nothing has yet measured. A third, `delegate.sh`'s exit code, is an old defect merely
+> written down for the first time. The rest predate this week.
 
 ---
 
@@ -200,29 +268,74 @@ for the mental model.
   `~/.claude/CLAUDE.md` — a symlink to this file. Edits between the markers are destroyed on the next
   install. Local rules go in an owning section *outside* them.
 
-### claude/commands/ (13)
-Explicit, user-invoked. The load-bearing ones:
+### claude/commands/ (12)
+Explicit, user-invoked. **Twelve**: 18 → 11 on 2026-09-18 (six deleted as natively covered,
+`/git-pr` folded into `/git-commit`), then **`/audit` restored on 2026-09-30**. The load-bearing ones:
+- **`scope.md`** — the entry point: what, why, and success criteria as a machine-readable checklist.
+  Sizes itself (micro / small / medium / large) so a bug fix does not get a ten-page treatment.
+- **`decompose.md`** — turns a scope into **vertical slices**: a thin sequential foundation first
+  (only what two or more slices share), then slices that each end in something observable, sized by
+  counting data movements across the task boundary. Rewritten 2026-09-17 from a layer-based
+  decomposition, because a layer has no observable outcome and therefore no criterion `builder` can
+  verify. §6 carries the worktree precondition.
 - **`delegate.md`** + `delegate-on/off/status.md` — hand a bounded task to a cheaper backend; Claude
-  decomposes + reviews the diff. `--task` routes to a specialized model. `delegate-status` shows the
-  active backend **and** the centralized cost/token dashboard (via `delegate-status.py`).
+  decomposes and reviews the diff. `--task` routes to one of five specialized backends.
+  `delegate-status` shows the active backend **and** the centralized cost/token dashboard.
+  The decompose step now requires the **briefing contract**: check command, reference files, and
+  the rules no linter can express.
+- **`audit.md`** — restored 2026-09-30, 68 lines where the deleted one had 98. Reviews **state**
+  (a file, a module, a component) on the three axes native `/code-review` does not carry: security,
+  homogeneity, maintainability. `/code-review` reviews a **change** for correctness and cleanup, and
+  this command says so and defers rather than competing. It requires every finding to name a file
+  and a line and to declare whether it was **reproduced** or **inferred**, and it tells the reader
+  to read `CLAUDE.md` and `.claude/context/` — half the real findings of the September routing tests
+  were contradictions between code and the project's own docs. For depth on security it names
+  `/security-review` and states plainly that the skill will not load itself.
 - **`retro.md`** — end-of-session retrospective: rewrites `status.md`, appends `anti-patterns.md`/
-  `decisions.md`, applies `CLAUDE.md`/`README.md`. Now also runs the **learning-loop** capitalization
-  (step 7) and **flags doc staleness** (step 8, keys off `architecture.md` front-matter).
+  `decisions.md`, applies `CLAUDE.md`/`README.md`. §7 runs the **learning loop**, which since
+  2026-09-17 starts with a *mechanical* read of session defects (`extract-defects.py`) before the
+  subjective pass, and picks the **form** of a rule down a four-rung enforcement ladder before
+  picking its destination. §8 flags doc staleness on **both** channels — the commit diff since the
+  `generated_from_commit` stamp, and `git status --porcelain` for work never committed.
 - **`document.md`** — this command: regenerates `architecture.md` + `reference.md` on demand, plus
   `test-protocol.md` **when the project has verification paths a test suite cannot cover** (this one
   does — it has no test suite at all). The first two are descriptive and terminal; the protocol is
   prescriptive and cyclical, self-contained by contract, and closes its own loop by re-reading its
   previous version and the traces its steps declare. `/retro` is not involved.
-  ⚠ **drift:** the section intro still claims the command owns two files — see the summary.
-- **The `audit-*` trio** — deleted 2026-09-18; see the namespace entry above for where each went.
-- **`scope.md`**, `bootstrap.md`, `explore.md`, `git-commit.md`.
+- **`git-commit.md`** — conventional commits, and since 2026-09-18 the pull request too
+  (`/git-commit pr`), absorbed from the deleted `/git-pr`: refuses on `main`, warns on secrets in
+  the diff, supports `draft` and an alternate base.
+- **`bootstrap.md`**, **`explore.md`** — project context scaffolding, and tagged exploration. Kept
+  deliberately: `bootstrap` does more than the native `/init` (it scaffolds `.claude/context/`), and
+  its `## Conventions` section now produces the briefing contract's three items instead of a
+  placeholder.
 
-### claude/skills/ (8)
-Auto-routed by `description`. `agent-builder`, `creative-direction`, `data-engineering`, `delegate`,
-`infra-containers`, `provider-keys`, `safe-penpot-writes`, `security-review`. The `delegate` skill
-mirrors the command logic for relevance-based triggering.
+### claude/skills/ (7)
+`agent-builder`, `creative-direction`, `data-engineering`, `infra-containers`, `provider-keys`,
+`safe-penpot-writes`, `security-review`. All seven symlinked and verified 2026-09-30 (repo,
+installed tree and manifest agree).
 
-Two carry more than guidance:
+**Treat a skill as a library, not as something that arrives.** The September reasoning was
+"a command has to be remembered, a skill fires on the words already being typed" — **measured false
+on this machine.** Four valid routing tests failed with trigger words present verbatim, and the
+lifetime counters explain why in one line: across 431 startups, every skill with real usage is one
+typed as `/name`, while the ones only a model could reach sit at zero. So the skills stay, as depth
+an invocable command points at — `/audit` names `security-review` explicitly and says plainly that
+it will not load itself.
+
+**Two are scoped rather than broad** (2026-09-30). `infra-containers` carries a `paths` glob
+(`**/Dockerfile*`, `**/docker-compose*.y*ml`, `**/k8s/**`, `**/*.service`) so it activates only on
+those file types. `data-engineering` could **not** be scoped that way — pipeline code is ordinary
+Python under any layout, and a glob would have silenced it rather than sharpened it — so its
+description was narrowed instead, to the one failure it genuinely knows: a step that is not safe to
+replay. Descriptions shrank 512→355 and 502→278 characters, which also buys listing budget.
+
+**`delegate` was folded into its command** the same day. It existed only for relevance-triggering;
+its 150-line body — task routing, usage tracking, the briefing contract, the scope-lock rule —
+moved into `/delegate` (the 45-line command it duplicated), and the directory was archived to
+`~/.claude/skills-retirees-20260930/`.
+
+Three carry more than guidance:
 
 - **`agent-builder`** — creates agents from two templates (`expert-template.md`,
   `creative-template.md`). **Step 5** is the load-bearing part: an agent's allowlist is `tools:`,
@@ -275,7 +388,9 @@ which turns the delegation rule in `CLAUDE.md` from a paragraph into the shape o
 - **Report contract:** five headings — `Done`, `Verified`, `Not done`, `Assumptions`,
   `Noticed, not touched`. The last four are mandatory; an empty one is information, a missing one
   reads as a claim.
-- ⚠ **debt:** never run. See the drift summary.
+- ⚠ **debt:** exercised 2026-09-18 (ten spawns, worktrees created/merged/cleaned), but the
+  `maxTurns: 40` resumption claim is still unobserved, and the report contract was not checked
+  heading by heading. See the drift summary.
 
 ### claude/scripts/
 - **`delegate.sh`** — `delegate.sh [--backend <name>] [--task <type>] <workdir> <prompt> [timeout]`.
@@ -301,6 +416,14 @@ which turns the delegation rule in `CLAUDE.md` from a paragraph into the shape o
   the JSONL: total/today cost, total tokens, error count, per-`backend · model` breakdown. Tolerates
   legacy lines missing metric fields (counted as "untracked", contribute $0). Surfaced by
   `/delegate-status`.
+- **`extract-defects.py`** — `extract-defects.py [PATH ...] [--project PATH] [--days N]`.
+  Read-only; it never writes. Reads Claude Code session transcripts (`~/.claude/projects/<slug>/
+  *.jsonl`, the slug being the project's absolute path with `/` → `-`) plus the delegation log, and
+  reports three defect signals: **failed subagent spawns**, **tasks respawned more than once**
+  (grouped by a task id such as `T0.2a` when present, else the first three words), and
+  **delegations that exited non-zero**. Positional paths bypass `--project`/`--days`. Exit 1 only on
+  a missing positional path; otherwise always 0, so it is safe as a `/retro` step. Feeds `/retro`
+  §7 step 1. ⚠ **debt:** it is a net, not a blanket — see the summary.
 - **`statusline.py`** — default status line: context usage, 5h/7d rate-limit quotas, minimal git.
 - **`context-bar.sh`** — legacy bash status line (theme color configurable).
 

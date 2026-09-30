@@ -1,12 +1,17 @@
 ---
-generated_from_commit: fa4cb00
-generated_on: 2026-09-17
+generated_from_commit: 4fd4368
+generated_on: 2026-09-30
 ---
 
 # Architecture — claude-setup
 
 > Orientation doc, not a README. For the maintainer who steers this framework and needs to see
 > how it fits together. Usage/install lives in [`README.md`](../README.md).
+>
+> **Generated from a dirty tree.** The stamp above names `4fd4368` because nothing has been
+> committed since, but twelve files were modified after it — this doc describes the **working
+> tree**, which is ahead of that commit. `/retro` §8 will flag it on its `git status` channel until
+> the work is committed; that is the channel working, not a fault.
 
 ## What & why
 
@@ -28,22 +33,41 @@ To understand the system, read in this order:
 3. **`claude/agents/`** — six personas in three families. Read `orchestrator.md` and `builder.md`
    together: they are the one place where a rule in `CLAUDE.md` is turned into a *mechanism*.
 4. **`claude/commands/`** — the slash commands (explicit, user-invoked workflows). Start with
-   `delegate.md`, `retro.md`, `document.md` — they carry most of the design.
-5. **`claude/skills/`** — auto-routed expertise (loaded on relevance, not by name).
+   `retro.md`, `document.md`, `delegate.md` — they carry most of the design. Eleven, deliberately:
+   anything the harness does natively was deleted rather than wrapped.
+5. **`claude/skills/`** — auto-routed expertise (loaded on relevance, not by name). Read this
+   *after* the commands and ask why each is one and not the other: a command must be remembered, a
+   skill fires on the words already being typed. Three commands were converted on that argument
+   alone in September.
 6. **`claude/config/delegate.yaml`** + **`claude/scripts/delegate.sh`** + the `delegate-*.py`
-   helpers — the one subsystem with real runtime logic (backend routing **and** usage tracking).
+   helpers — one of two subsystems with real runtime logic (backend routing **and** usage tracking).
    Worth reading together.
+7. **`claude/commands/retro.md` §7** + **`claude/scripts/extract-defects.py`** +
+   [`learning-loop-spec.md`](learning-loop-spec.md) — the other one: how the framework is supposed
+   to improve itself. The command is the contract, the script is its mechanical input, the spec
+   holds the reasoning. Read last, because it only makes sense once the rest is familiar.
 
 ## The two surfaces (a key mental model)
 
 Not everything costs the same in context. This distinction governs most design decisions here:
 
 - **Always-loaded surface** — `CLAUDE.md` + the `description:` front-matter of every skill/agent.
-  Cheap per item but paid *every session*. Kept lean on purpose.
+  Cheap per item but paid *every session*. **It has a hard cap, and overflow is silent** — the skill
+  listing is budgeted at ~1% of the context window, and past it Claude Code drops descriptions,
+  starting with the skills invoked least. A dropped description is a skill that can no longer be
+  matched, with nothing said. Measured 2026-09-30 at **×1.9 over**, brought to ×0.60 by setting the
+  third-party skills nobody invokes to `name-only`. The lesson generalises: on this surface, adding
+  something does not just cost tokens — past the cap it *evicts* something else, and you do not
+  choose which.
 - **On-demand surface** — command bodies, skill bodies, agent bodies, scripts. Loaded only when
   invoked/routed. Can be richer.
 - **UX surface** — the flat slash-command namespace. A cost even when tokens are free: too many
   commands and the useful ones become invisible.
+
+A third fact cuts across all three, and it is the most important thing measured this month:
+**automatic routing does not happen here.** Over 431 startups, every skill with real usage is one
+typed as `/name`; the ones only a model could reach are at zero. Design accordingly — a skill is a
+library an invocable command points at, not something that arrives when the subject comes up.
 
 ## Advisory vs. mechanical (the second mental model)
 
@@ -58,12 +82,21 @@ Three places make a rule **mechanical** — enforced by the harness, not by good
 | "Delegate implementation" | a paragraph in `CLAUDE.md` | `orchestrator` has no `Write`/`Edit` |
 | "Don't damage the working tree" | a careful prompt | `builder` runs under `isolation: worktree` |
 | "This agent is read-only" | a sentence in its body | its `tools:` allowlist |
+| "Python is formatted" | a convention in `CLAUDE.md` | the `ruff` hook on `Write\|Edit` |
+| "Standards are followed" | "match the surrounding style" | the brief carries the check command and reference files |
 
-The third one is a repaired defect, and worth remembering: three agents declared `allowed-tools:`
-— the field for *skills and slash commands*. A subagent definition reads `tools:`. An unrecognized
-key is ignored silently, so the agents kept every tool while their bodies announced restraint.
-**A capability stated only in a prompt is a wish.** Verify against the agent listing printed at the
-start of a session.
+The last three are repaired defects, and they share one shape. Three agents declared
+`allowed-tools:` — the field for *skills and slash commands*; a subagent definition reads `tools:`,
+and an unrecognized key is ignored silently, so the agents kept every tool while their bodies
+announced restraint. The `ruff` hook declared `"matcher": "Write(*.py)"` — a path pattern in a field
+that matches **tool names** — so it matched nothing and had never run once in two months, while the
+README advertised it. **A capability stated only in a declaration is a wish.** The defence is not
+more care at writing time; it is executing the thing once and reading the result — which is what
+[`test-protocol.md`](test-protocol.md) §A exists for, and why it now covers hooks (§A.3b).
+
+There is also a **fourth rung, newer than this table**: the enforcement *ladder* in `/retro` §7,
+which says to pick the form of a rule — tool constraint, hook/linter, scripted check, prose — before
+picking where it lives. This table is that ladder applied backwards, to rules that already exist.
 
 ## Components
 
@@ -72,8 +105,8 @@ start of a session.
 | `install.sh` | Symlink commands/agents/scripts/skills + `CLAUDE.md`/`settings.json` into `~/.claude`; **copy** `delegate.yaml` into `~/.config/claude-code/`; warn on missing external skill dependencies; record every link in a TSV manifest; back up conflicts. |
 | `uninstall.sh` | Reverse the install using the manifest — remove only what we created, only if untouched. |
 | `claude/CLAUDE.md` | Always-loaded global preferences: language, problem-solving, code style, **delegation rules**, role personalities, plus the vendored Penpot AI kit block (installer-generated — never edit between its markers). |
-| `claude/commands/*.md` (11) | Slash commands — explicit, user-invoked workflows (scope, explore, decompose, bootstrap, document, the delegate quartet, git-commit, retro). Six were **deleted** 2026-09-18 once Claude Code covered them natively; the security axis of `/audit` moved into the `security-review` skill rather than disappearing. |
-| `claude/skills/*/` (8) | Auto-routed domain expertise (agent-builder, creative-direction, data-engineering, delegate, infra-containers, provider-keys, safe-penpot-writes, security-review). |
+| `claude/commands/*.md` (12) | Slash commands — explicit, user-invoked workflows (scope, explore, decompose, audit, bootstrap, document, the delegate quartet, git-commit, retro). Six were deleted 2026-09-18 as natively covered; **`/audit` was restored 2026-09-30** once usage counters showed 28 lifetime invocations, narrowed to the three axes `/code-review` does not carry. |
+| `claude/skills/*/` (7) | Domain expertise, loaded on relevance **in theory** — measured 2026-09-30, automatic routing effectively never fires here, so treat a skill as a library an invocable command points at, not as something that arrives on its own (agent-builder, creative-direction, data-engineering, infra-containers, provider-keys, safe-penpot-writes, security-review). |
 | `claude/agents/*.md` (6) | Personas in three families — see below. |
 | `claude/scripts/` | Runtime helpers: `delegate.sh` (backend router + run logger), `delegate-parse-session.py` (reads a backend's native session log for cost/tokens), `delegate-status.py` (centralized usage dashboard), `statusline.py` (default status line), `context-bar.sh` (legacy status line), `extract-defects.py` (read-only defect report feeding `/retro` §7). |
 | `claude/config/delegate.yaml` | The one user-editable config — delegation backends + task→model routing. Copied, never symlinked. |
@@ -117,6 +150,13 @@ Reviewer agents pair with a knowledge skill (`infra-expert` ↔ `infra-container
                                         │ cost / tokens / session_id
                                         ▼
                               delegate-runs.jsonl ◀──aggregates── delegate-status.py ──▶ /delegate-status
+                                        │
+                                        │ non-zero exits
+                                        ▼
+   ~/.claude/projects/<slug>/*.jsonl ──▶ extract-defects.py ──▶ /retro §7 ──▶ _candidates.jsonl
+        (session transcripts)            failed spawns,          promote by     (ledger, out of
+                                         respawned tasks         form then      MEMORY.md, so it
+                                                                 destination    costs no context)
 ```
 
 Two delegation chains coexist, and they are not interchangeable:
@@ -169,11 +209,11 @@ orchestrator reads the diff.
   2026-09-17); and `delegate.yaml`, being a **copy**, drifts on the installed side (re-synced
   2026-09-17, repo ← installed). Both had to be found by hand, and both will recur. The check is mechanical and belongs to
   [`test-protocol.md`](test-protocol.md) §A.
-- **Docs freshness is commit-based, and that is a real limit**: `/retro` compares this file's
-  `generated_from_commit` stamp to `HEAD`. It cannot see uncommitted work. A session that writes all
-  day without committing leaves these docs describing a tree that has moved, while the check reports
-  them fresh. `/document` regenerates from the working tree, so running it is the answer — the flag
-  is a reminder, not a guarantee.
+- **Docs freshness is checked on two channels, and flags rather than fixes**: `/retro` §8 compares
+  this file's `generated_from_commit` stamp to `HEAD` **and** runs `git status --porcelain`, naming
+  which fired. The second channel was added 2026-09-18 to close a real blind spot — the commit diff
+  alone stays silent exactly when a long uncommitted session makes the docs stale. Regeneration is
+  still `/document`'s job and an explicit choice: the flag is a reminder, not a guarantee.
 
 ## Related docs
 
