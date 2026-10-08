@@ -113,11 +113,11 @@ wrapped — see [What was removed, and where it went](#what-was-removed-and-wher
 |----------|-------|----------|
 | `coding` | kimi-k2.7-code (easy) | Simple, bounded edits in any language |
 | `python` | minimax-m3 (complex) | Python files, data scripts, ML code |
-| `architecture` | glm-5.2 (complex) | Architecture and brainstorming work |
-| `marketing` | deepseek-v4-pro (medium) | README, docs, copywriting |
+| `architecture` | glm-5.3 (complex) | Architecture and brainstorming work |
+| `marketing` | deepseek-v4.1-flash (medium) | README, docs, copywriting |
 | _(omit)_ | qwen3.7-max (opencode) / mistral-medium-3.5 (vibe) | Complex / multi-file / unclear |
 
-Backend config lives in `~/.config/claude-code/delegate.yaml`. Add or swap models without touching the skill.
+Backend config lives in `~/.config/claude-code/delegate.yaml`. Add or swap models without touching the skill. A run is killed after `default_timeout` (900 s); exit code 124 means the agent ran out of time, not that the task was too large — re-run with a longer timeout rather than splitting it.
 
 ## Workflow
 

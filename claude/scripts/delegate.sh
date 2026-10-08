@@ -112,6 +112,11 @@ FILES_CHANGED=$(cd "$WORKDIR" && git status --porcelain 2>/dev/null | wc -l | tr
 echo ""
 echo "[delegate] Exit code: $EXIT_CODE | Duration: ${DURATION}s | Files changed: $FILES_CHANGED"
 echo "$DIFF_STAT"
+# 124 is timeout(1)'s exit code: the agent was killed mid-work, it did not fail.
+if [ "$EXIT_CODE" -eq 124 ]; then
+  echo "[delegate] TIMEOUT after ${TIMEOUT}s — the agent was still working. The diff above is partial."
+  echo "[delegate] Review it, then re-run with a longer timeout (3rd argument) rather than splitting the task."
+fi
 
 # Pull real usage metrics (tokens, cost, steps) from the backend's own session
 # logs. Best-effort: the parser prints {} on any failure, so logging never breaks.

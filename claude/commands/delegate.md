@@ -63,10 +63,10 @@ Before running the script, pick the right `--task` flag based on context:
 | Context | `--task` | Model used | Tier |
 |---|---|---|---|
 | Python files, data scripts, ML code | `python` | MiniMax M3 (alt GLM-5.1) | complex |
-| Architecture, brainstorming | `architecture` | GLM-5.2 | complex |
+| Architecture, brainstorming | `architecture` | GLM-5.3 | complex |
 | Simple edits in any other language | `coding` | Kimi K2.7-code | easy |
-| README, docs, copywriting, descriptions | `marketing` | DeepSeek V4-Pro | medium |
-| Complex / multi-file / unclear | _(omit)_ | DeepSeek V4-Pro / vibe (default) | medium |
+| README, docs, copywriting, descriptions | `marketing` | DeepSeek V4.1-Flash | medium |
+| Complex / multi-file / unclear | _(omit)_ | Qwen3.7-Max (alt vibe / Mistral Medium 3.5) | medium |
 
 When in doubt, omit `--task` — the default generalist backend handles all cases.
 
@@ -97,7 +97,11 @@ If exit code is 0 and the diff looks reasonable:
 2. Summarize what was done to the user
 3. Flag any concerns (style issues, missing edge cases)
 
-If exit code is non-zero:
+If exit code is 124, the run hit the timeout: the agent was killed while still working. This says nothing about the task being too large for the model, so do not split it into smaller tasks for that reason:
+1. Review the partial `git diff` — keep what is correct
+2. Re-run with a longer timeout (third argument, e.g. `1800`), telling the agent what is already done
+
+If exit code is any other non-zero value:
 1. Report the failure
 2. Offer to retry with a refined prompt or handle it directly
 
@@ -142,6 +146,7 @@ Good delegate prompts are:
 - **Specific**: Include exact file paths, function names, line references
 - **Self-contained**: The agent knows nothing about our conversation
 - **Bounded**: One clear task, not "improve the codebase"
+- **Non-interactive** (mandatory): The agent runs headless and has no way to ask a question. Always include: "Do not ask questions. When something is ambiguous, make the most reasonable choice and list it in your final report."
 - **Scope-locked** (mandatory): Always end with an explicit scope boundary
 
 ### Scope-lock rule
@@ -155,7 +160,7 @@ This prevents the delegate agent from "helpfully" refactoring adjacent files. Ch
 ### Example prompts
 
 Good:
-> In src/auth/signup.py, add email format validation to the `validate_email()` function (line 42). Use a regex pattern. Return False for invalid emails. Add 3 test cases in tests/test_signup.py. You must ONLY edit the files at: src/auth/signup.py, tests/test_signup.py. Do not create, delete, or modify any other file.
+> In src/auth/signup.py, add email format validation to the `validate_email()` function (line 42). Use a regex pattern. Return False for invalid emails. Add 3 test cases in tests/test_signup.py. Do not ask questions. When something is ambiguous, make the most reasonable choice and list it in your final report. You must ONLY edit the files at: src/auth/signup.py, tests/test_signup.py. Do not create, delete, or modify any other file.
 
 Bad:
 > Fix the email thing we discussed earlier.

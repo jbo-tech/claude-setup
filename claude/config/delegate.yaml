@@ -28,7 +28,7 @@ backends:
 
   - name: "vibe"
     command: "vibe"
-    args: '--agent auto-approve -p "$(cat {prompt_file})" --trust --max-turns {timeout} --output streaming'
+    args: '--agent auto-approve -p "$(cat {prompt_file})" --trust --max-turns 80 --output streaming'
     workdir_flag: "--workdir"
     model: "mistral-medium-3.5"
     enabled: true
@@ -77,7 +77,7 @@ backends:
     command: "opencode"
     args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "opencode-go/glm-5.2"
+    model: "opencode-go/glm-5.3"
     task: "architecture"
     enabled: true
     priority: 1
@@ -87,7 +87,7 @@ backends:
     command: "opencode"
     args: 'run "$(cat {prompt_file})"'
     workdir_flag: "--dir"
-    model: "opencode-go/deepseek-v4-pro"  # medium tier
+    model: "opencode-go/deepseek-v4.1-flash"  # medium tier
     task: "marketing"
     enabled: true
     priority: 1
@@ -98,5 +98,5 @@ backends:
 # =============================================================================
 
 settings:
-  default_timeout: 120
+  default_timeout: 900
   log_file: "~/.local/share/claude-code/delegate-runs.jsonl"
